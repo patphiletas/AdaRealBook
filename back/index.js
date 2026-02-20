@@ -9,21 +9,21 @@ const PORT = 3001;
 
 // --- CONFIGURATION ---
 
-// Autorise ton projet Vite (le Front) à communiquer avec cette API
+
 app.use(cors());
 app.use(express.json());
 
-// Connexion à la base de données Neon via l'URL dans le .env
+
 const sql = postgres(process.env.DATABASE_url, { ssl: 'require' });
 
-// Configuration Cloudinary (utilise tes identifiants)
+
 cloudinary.config({ 
     cloud_name: 'dpnudoyxb', 
     api_key: '392895888158834', 
     api_secret: 'awLuzuRDdU3nSVk30pwls-hL8I4' 
 });
 
-// --- LOGIQUE DE SYNCHRONISATION (CLOUD ➔ DB) ---
+
 
 async function syncPartitions() {
     try {
@@ -31,14 +31,14 @@ async function syncPartitions() {
         
         const result = await cloudinary.api.resources({
             type: 'upload',
-            resource_type: 'raw', // Cloudinary classe souvent les PDF ici par défaut
+            resource_type: 'raw', 
             max_results: 100
         });
 
         console.log(`📂 ${result.resources.length} fichiers trouvés.`);
 
         for (const file of result.resources) {
-            // On ne traite que les fichiers PDF
+           
             if (file.format === 'pdf') {
                 
                 // Nettoyage du nom : remplace les "_" de Cloudinary par des espaces
@@ -96,6 +96,5 @@ app.listen(PORT, () => {
     console.log(`📄 Route JSON : http://localhost:${PORT}/api/partitions`);
     console.log(`-----------------------------------------------`);
     
-    // Optionnel : Lance la synchro automatiquement au démarrage du serveur
-    // syncPartitions(); 
+    syncPartitions(); 
 });
