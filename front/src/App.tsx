@@ -1,6 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+// @ts-ignore
+import { pdfjs } from 'react-pdf';
+import SearchList from './components/SearchList';
+import PdfViewer from './components/PdfViewer';
+import MobileViewer from './components/MobileViewer';
 
-interface Partition {
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@5.4.296/build/pdf.worker.min.mjs`;
+
+export interface Partition {
   id: number;
   title: string;
   composer: string;
@@ -9,11 +16,16 @@ interface Partition {
   category: string;
 }
 
-const CLOUDINARY_BASE = "https://res.cloudinary.com/dpnudoyxb/image/upload/";
+const CLOUDINARY_BASE = "https://res.cloudinary.com/dpnudoyxb/image/upload";
 
 export default function App() {
   const [partitions, setPartitions] = useState<Partition[]>([]);
   const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState<Partition | null>(null);
+  const [numPages, setNumPages] = useState(0);
+  const [scale, setScale] = useState(1);
+  const [pdfWidth, setPdfWidth] = useState(400);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
   useEffect(() => {
     fetch("http://localhost:3001/api/partitions")
@@ -22,65 +34,91 @@ export default function App() {
       .catch(err => console.error("Erreur :", err));
   }, []);
 
-  const resultats = partitions.filter(p => {
-    const saisie = search.trim().toLowerCase();
-    if (!saisie) return true;
-    if (saisie.startsWith("(") && saisie.endsWith(")")) {
-      const ton = saisie.replace(/[()]/g, "");
-      return p.musical_key?.toLowerCase() === ton;
-    }
-    if (saisie.length < 3) return true;
+  const updateLayout = useCallback(() => {
+    const w = window.innerWidth;
+    setIsMobile(w < 1024);
+    setPdfWidth(w < 1024 ? w - 32 : Math.floor(w * 0.66 - 48));
+  }, []);
+
+  useEffect(() => {
+    updateLayout();
+    window.addEventListener('resize', updateLayout);
+    return () => window.removeEventListener('resize', updateLayout);
+  }, [updateLayout]);
+
+  useEffect(() => {
+    setNumPages(0);
+    setScale(1);
+  }, [selected]);
+
+  const pdfUrl = selected ? `${CLOUDINARY_BASE}/${selected.name_pdf}.pdf` : null;
+
+  const zoomIn = () => setScale(s => Math.min(3, s + 0.25));
+  const zoomOut = () => setScale(s => Math.max(0.5, s - 0.25));
+  const zoomReset = () => setScale(1);
+
+  // Mobile : PDF plein écran
+  if (isMobile && selected) {
     return (
-      p.title.toLowerCase().includes(saisie) ||
-      p.composer.toLowerCase().includes(saisie) ||
-      p.category.toLowerCase().includes(saisie)
+      <MobileViewer
+        partition={selected}
+        pdfUrl={pdfUrl!}
+        numPages={numPages}
+        scale={scale}
+        pdfWidth={pdfWidth}
+        onLoadSuccess={setNumPages}
+        onZoomIn={zoomIn}
+        onZoomOut={zoomOut}
+        onZoomReset={zoomReset}
+        onBack={() => setSelected(null)}
+      />
     );
-  });
+  }
 
-  const ouvrirPartition = (name_pdf: string) => {
-    if (!name_pdf) return;
-    const url = `${CLOUDINARY_BASE}/${name_pdf}.pdf`;
-    window.open(url, "_blank");
-  };
-
+  // Desktop : split-view 1/3 + 2/3
   return (
-    <div className="max-w-3xl mx-auto p-5 font-sans">
-      <header className="mb-6">
-        <h2 className="text-3xl font-bold text-slate-800">My Real Book 🎷</h2>
-        <p className="text-slate-500">Sélection du Volume 1</p>
+    <div className="h-screen flex flex-col bg-slate-50 overflow-hidden">
+
+      {/* Header */}
+      <header className="shrink-0 px-6 py-3 bg-white border-b border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            My Real Book <span className="text-red-500">🎷</span>
+          </h1>
+          <p className="text-slate-400 text-xs">{partitions.length} morceaux · Volume 1</p>
+        </div>
+        {selected && (
+          <div className="text-right">
+            <p className="font-semibold text-slate-800 text-sm">{selected.title}</p>
+            <p className="text-slate-500 text-xs">
+              {selected.composer} · <span className="font-mono">{selected.musical_key}</span> · <em>{selected.category}</em>
+            </p>
+          </div>
+        )}
       </header>
 
-      <input
-        type="text"
-        placeholder="Titre, compositeur... ou (Bb) pour la tonalité"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-full p-4 text-lg border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all mb-5"
-      />
+      {/* Body */}
+      <div className="flex flex-1 overflow-hidden">
+        <SearchList
+          partitions={partitions}
+          search={search}
+          onSearchChange={setSearch}
+          selected={selected}
+          onSelect={setSelected}
+        />
+        <div className="flex-1 overflow-hidden bg-gray-100">
+          <PdfViewer
+            pdfUrl={pdfUrl}
+            numPages={numPages}
+            scale={scale}
+            onLoadSuccess={setNumPages}
+            onZoomIn={zoomIn}
+            onZoomOut={zoomOut}
+            onZoomReset={zoomReset}
+          />
+        </div>
+      </div>
 
-      <ul className="bg-white rounded-xl shadow-sm border border-slate-100 divide-y divide-slate-100">
-        {resultats.map(item => (
-          <li
-            key={item.id}
-            onClick={() => ouvrirPartition(item.name_pdf)}
-            className="p-4 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-colors"
-          >
-            <div>
-              <strong className="text-lg text-slate-900 block">{item.title}</strong>
-              <span className="text-slate-500">{item.composer} • ({item.musical_key})</span>
-            </div>
-            <div className="text-right">
-              <em className="text-slate-400 text-sm not-italic">{item.category}</em>
-            </div>
-          </li>
-        ))}
-      </ul>
-
-      {resultats.length === 0 && (
-        <p className="text-center text-slate-400 mt-10 italic">
-          Aucun morceau trouvé pour "{search}"
-        </p>
-      )}
     </div>
   );
 }
