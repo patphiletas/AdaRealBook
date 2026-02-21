@@ -13,9 +13,10 @@ interface Props {
   onSearchChange: (value: string) => void;
   selected: Partition | null;
   onSelect: (partition: Partition) => void;
+  fullWidth?: boolean;
 }
 
-export default function SearchList({ partitions, search, onSearchChange, selected, onSelect }: Props) {
+export default function SearchList({ partitions, search, onSearchChange, selected, onSelect, fullWidth = false }: Props) {
   const resultats = partitions.filter(p => {
     const saisie = search.trim().toLowerCase();
     if (!saisie) return true;
@@ -32,7 +33,7 @@ export default function SearchList({ partitions, search, onSearchChange, selecte
   });
 
   return (
-    <div className="flex flex-col border-r border-slate-200 bg-white overflow-hidden w-1/3 shrink-0">
+    <div className={`flex flex-col border-r border-slate-200 bg-white overflow-hidden ${fullWidth ? 'w-full' : 'w-1/3 shrink-0'}`}>
       <div className="p-3 border-b border-slate-100 shrink-0">
         <input
           type="text"

@@ -24,7 +24,7 @@ export default function App() {
   const [selected, setSelected] = useState<Partition | null>(null);
   const [numPages, setNumPages] = useState(0);
   const [scale, setScale] = useState(1);
-  const [pdfWidth, setPdfWidth] = useState(400);
+  const [pdfWidth, setPdfWidth] = useState(600);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
   useEffect(() => {
@@ -57,7 +57,6 @@ export default function App() {
   const zoomOut = () => setScale(s => Math.max(0.5, s - 0.25));
   const zoomReset = () => setScale(1);
 
-  // Mobile : PDF plein écran
   if (isMobile && selected) {
     return (
       <MobileViewer
@@ -75,11 +74,9 @@ export default function App() {
     );
   }
 
-  // Desktop : split-view 1/3 + 2/3
   return (
     <div className="h-screen flex flex-col bg-slate-50 overflow-hidden">
 
-      {/* Header */}
       <header className="shrink-0 px-6 py-3 bg-white border-b border-slate-200 shadow-sm flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
@@ -87,7 +84,7 @@ export default function App() {
           </h1>
           <p className="text-slate-400 text-xs">{partitions.length} morceaux · Volume 1</p>
         </div>
-        {selected && (
+        {selected && !isMobile && (
           <div className="text-right">
             <p className="font-semibold text-slate-800 text-sm">{selected.title}</p>
             <p className="text-slate-500 text-xs">
@@ -97,26 +94,37 @@ export default function App() {
         )}
       </header>
 
-      {/* Body */}
-      <div className="flex flex-1 overflow-hidden">
-        <SearchList
-          partitions={partitions}
-          search={search}
-          onSearchChange={setSearch}
-          selected={selected}
-          onSelect={setSelected}
-        />
-        <div className="flex-1 overflow-hidden bg-gray-100">
-          <PdfViewer
-            pdfUrl={pdfUrl}
-            numPages={numPages}
-            scale={scale}
-            onLoadSuccess={setNumPages}
-            onZoomIn={zoomIn}
-            onZoomOut={zoomOut}
-            onZoomReset={zoomReset}
+      <div className="flex flex-1 min-h-0">
+        {isMobile ? (
+          <SearchList
+            partitions={partitions}
+            search={search}
+            onSearchChange={setSearch}
+            selected={selected}
+            onSelect={setSelected}
+            fullWidth
           />
-        </div>
+        ) : (
+          <>
+            <SearchList
+              partitions={partitions}
+              search={search}
+              onSearchChange={setSearch}
+              selected={selected}
+              onSelect={setSelected}
+            />
+            <PdfViewer
+              pdfUrl={pdfUrl}
+              numPages={numPages}
+              scale={scale}
+              pdfWidth={pdfWidth}
+              onLoadSuccess={setNumPages}
+              onZoomIn={zoomIn}
+              onZoomOut={zoomOut}
+              onZoomReset={zoomReset}
+            />
+          </>
+        )}
       </div>
 
     </div>
