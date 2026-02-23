@@ -11,7 +11,7 @@ import type { Partition } from './types/interface';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@5.4.296/build/pdf.worker.min.mjs`;
 
-const CLOUDINARY_BASE = "https://res.cloudinary.com/dpnudoyxb/image/upload";
+// const CLOUDINARY_BASE = "https://res.cloudinary.com/dpnudoyxb/image/upload";
 
 const CLOUD_NAME = "dpnudoyxb";
 
