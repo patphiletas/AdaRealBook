@@ -1,20 +1,4 @@
-interface Partition {
-  id: number;
-  title: string;
-  composer: string;
-  musical_key: string;
-  name_pdf: string;
-  category: string;
-}
-
-interface Props {
-  partitions: Partition[];
-  search: string;
-  onSearchChange: (value: string) => void;
-  selected: Partition | null;
-  onSelect: (partition: Partition) => void;
-  fullWidth?: boolean;
-}
+import type { Props } from "../types/interface";
 
 export default function SearchList({ partitions, search, onSearchChange, selected, onSelect, fullWidth = false }: Props) {
   const resultats = partitions.filter(p => {

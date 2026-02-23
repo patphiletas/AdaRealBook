@@ -4,17 +4,12 @@ import { pdfjs } from 'react-pdf';
 import SearchList from './components/SearchList';
 import PdfViewer from './components/PdfViewer';
 import MobileViewer from './components/MobileViewer';
+import type { Partition } from './types/interface';
+
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@5.4.296/build/pdf.worker.min.mjs`;
 
-export interface Partition {
-  id: number;
-  title: string;
-  composer: string;
-  musical_key: string;
-  name_pdf: string;
-  category: string;
-}
+
 
 const CLOUDINARY_BASE = "https://res.cloudinary.com/dpnudoyxb/image/upload";
 
@@ -28,7 +23,7 @@ export default function App() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
   useEffect(() => {
-    fetch("http://localhost:3001/api/partitions")
+    fetch(`${import.meta.env.VITE_API_URL}/api/partitions`)
       .then(res => res.json())
       .then(data => setPartitions(data))
       .catch(err => console.error("Erreur :", err));
