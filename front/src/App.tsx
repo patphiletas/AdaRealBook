@@ -5,12 +5,11 @@ import SearchList from './components/SearchList';
 import PdfViewer from './components/PdfViewer';
 import MobileViewer from './components/MobileViewer';
 import "./styles/PdfViewer.css";
+import "./styles/MobileViewer.css";
+
 import type { Partition } from './types/interface';
 
-
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@5.4.296/build/pdf.worker.min.mjs`;
-
-
 
 const CLOUDINARY_BASE = "https://res.cloudinary.com/dpnudoyxb/image/upload";
 

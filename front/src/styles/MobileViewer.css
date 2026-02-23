@@ -1,0 +1,118 @@
+.mobileviewer-container {
+  position: fixed;
+  inset: 0;
+  background: #111827;
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+}
+
+/* Header */
+.mobileviewer-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #1f2937;
+  border-bottom: 1px solid #374151;
+  flex-shrink: 0;
+}
+
+.mobileviewer-back {
+  color: white;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.5rem;
+  background: #374151;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.mobileviewer-back:hover {
+  background: #4b5563;
+}
+
+.mobileviewer-title {
+  min-width: 0;
+}
+
+.mobileviewer-title-main {
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobileviewer-title-sub {
+  color: #9ca3af;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Zoom bar */
+.mobileviewer-zoom {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #1f2937;
+  border-bottom: 1px solid #374151;
+  flex-shrink: 0;
+}
+
+.mobileviewer-button {
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  background: #374151;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: white;
+  transition: background 0.2s ease;
+}
+
+.mobileviewer-button:hover {
+  background: #4b5563;
+}
+
+.mobileviewer-button-reset {
+  color: #9ca3af;
+}
+
+.mobileviewer-scale {
+  color: #9ca3af;
+  font-size: 0.875rem;
+  width: 3rem;
+  text-align: center;
+}
+
+/* PDF container */
+.mobileviewer-pdf-wrapper {
+  flex: 1;
+  overflow: auto;
+  background: #111827;
+  padding: 0.5rem;
+}
+
+.mobileviewer-pdf-inner {
+  margin: 0 auto;
+}
+
+.mobileviewer-loading {
+  color: #9ca3af;
+  margin-top: 2.5rem;
+  font-size: 0.875rem;
+}
+
+.mobileviewer-error {
+  color: #f87171;
+  margin-top: 2.5rem;
+  font-size: 0.875rem;
+}
