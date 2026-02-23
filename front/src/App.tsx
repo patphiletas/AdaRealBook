@@ -4,8 +4,8 @@ import { pdfjs } from 'react-pdf';
 import SearchList from './components/SearchList';
 import PdfViewer from './components/PdfViewer';
 import MobileViewer from './components/MobileViewer';
+import "./styles/PdfViewer.css";
 import type { Partition } from './types/interface';
-import type { Props } from './types/interface';
 
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@5.4.296/build/pdf.worker.min.mjs`;

@@ -1,9 +1,7 @@
 import { Document, Page } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
-import type { MobileViewerProps, Partition } from '../types/interface.ts';
-
-
+import type { MobileViewerProps } from '../types/interface.ts';
 
 
 export default function MobileViewer({
