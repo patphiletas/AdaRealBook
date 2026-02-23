@@ -8,17 +8,32 @@ export interface Partition {
 }
   
 
- export interface Props {
-  partition: Partition[];
-  pdfUrl: string;
-  numPages: number;
-  scale: number;
-  pdfWidth: number;
+ export interface SearchListProps {
+  partitions: Partition[];
   search: string;
   onSearchChange: (value: string) => void;
   selected: Partition | null;
   onSelect: (partition: Partition) => void;
   fullWidth?: boolean;
+}
+
+export interface PdfViewerProps {
+  pdfUrl: string | null;
+  numPages: number;
+  scale: number;
+  pdfWidth: number;
+  onLoadSuccess: (numPages: number) => void;
+  onZoomIn: () => void;
+  onZoomOut: () => void;
+  onZoomReset: () => void;
+}
+
+export interface MobileViewerProps {   
+  partition: Partition;
+  pdfUrl: string;
+  numPages: number;
+  scale: number;
+  pdfWidth: number;
   onLoadSuccess: (numPages: number) => void;
   onZoomIn: () => void;
   onZoomOut: () => void;
