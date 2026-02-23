@@ -13,6 +13,11 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@5.4.296/build/pdf.
 
 const CLOUDINARY_BASE = "https://res.cloudinary.com/dpnudoyxb/image/upload";
 
+const CLOUD_NAME = "dpnudoyxb";
+
+const buildPdfUrl = (publicId: string) =>
+  `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${publicId}.pdf`;
+
 export default function App() {
   const [partitions, setPartitions] = useState<Partition[]>([]);
   const [search, setSearch] = useState("");
