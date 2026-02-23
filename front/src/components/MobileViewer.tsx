@@ -1,34 +1,15 @@
-// @ts-ignore
 import { Document, Page } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
+import type { MobileViewerProps, Partition } from '../types/interface.ts';
 
-interface Partition {
-  id: number;
-  title: string;
-  composer: string;
-  musical_key: string;
-  name_pdf: string;
-  category: string;
-}
 
-interface Props {
-  partition: Partition;
-  pdfUrl: string;
-  numPages: number;
-  scale: number;
-  pdfWidth: number;
-  onLoadSuccess: (numPages: number) => void;
-  onZoomIn: () => void;
-  onZoomOut: () => void;
-  onZoomReset: () => void;
-  onBack: () => void;
-}
+
 
 export default function MobileViewer({
   partition, pdfUrl, numPages, scale, pdfWidth,
   onLoadSuccess, onZoomIn, onZoomOut, onZoomReset, onBack
-}: Props) {
+}: MobileViewerProps) {
 
   const pageWidth = pdfWidth * scale;
 

@@ -1,6 +1,6 @@
-import type { Props } from "../types/interface";
+import type { SearchListProps } from "../types/interface";
 
-export default function SearchList({ partitions, search, onSearchChange, selected, onSelect, fullWidth = false }: Props) {
+export default function SearchList({ partitions, search, onSearchChange, selected, onSelect, fullWidth = false }: SearchListProps) {
   const resultats = partitions.filter(p => {
     const saisie = search.trim().toLowerCase();
     if (!saisie) return true;

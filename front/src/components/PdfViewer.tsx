@@ -1,19 +1,13 @@
 // @ts-ignore — react-pdf n'a pas de types parfaits, on ignore les warnings TS
 import { Document, Page } from 'react-pdf';
-
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
+import type { PdfViewerProps } from '../types/interface';
+import type { Partition } from '../types/interface';
 // Props reçues depuis App.tsx
-interface Props {
-  pdfUrl: string | null;      // URL Cloudinary du PDF, null si aucun morceau sélectionné
-  numPages: number;           // Nombre de pages du PDF, mis à jour par onLoadSuccess
-  scale: number;              // Facteur de zoom (1 = 100%, 0.5 = 50%, 2 = 200%)
-  pdfWidth: number;           // Largeur de base calculée dans App selon la taille d'écran
-  onLoadSuccess: (numPages: number) => void; // Callback quand react-pdf a chargé le PDF
-  onZoomIn: () => void;       // scale + 0.25
-  onZoomOut: () => void;      // scale - 0.25
-  onZoomReset: () => void;    // scale → 1
-}
 
-export default function PdfViewer({ pdfUrl, numPages, scale, pdfWidth, onLoadSuccess, onZoomIn, onZoomOut, onZoomReset }: Props) {
+
+export default function PdfViewer({ pdfUrl, numPages, scale, pdfWidth, onLoadSuccess, onZoomIn, onZoomOut, onZoomReset }: PdfViewerProps & { partition: Partition }) {
 
   // Aucun morceau sélectionné : état vide centré
   if (!pdfUrl) {
