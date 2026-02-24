@@ -11,12 +11,12 @@ import type { Partition } from './types/interface';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@5.4.296/build/pdf.worker.min.mjs`;
 
-// const CLOUDINARY_BASE = "https://res.cloudinary.com/dpnudoyxb/image/upload";
+const CLOUDINARY_BASE = "https://res.cloudinary.com/dpnudoyxb/image/upload";
 
 const CLOUD_NAME = "dpnudoyxb";
 
-const buildPdfUrl = (publicId: string) =>
-  `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${publicId}.pdf`;
+// const buildPdfUrl = (publicId: string) =>
+//   `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${publicId}.pdf`;
 
 export default function App() {
   const [partitions, setPartitions] = useState<Partition[]>([]);
@@ -51,7 +51,7 @@ export default function App() {
     setScale(1);
   }, [selected]);
 
-  const pdfUrl = selected ? `${buildPdfUrl(selected.name_pdf)}` : null;
+  const pdfUrl = selected ? `${CLOUDINARY_BASE}/${selected.name_pdf}.pdf` : null;
 
   const zoomIn = () => setScale(s => Math.min(3, s + 0.25));
   const zoomOut = () => setScale(s => Math.max(0.5, s - 0.25));

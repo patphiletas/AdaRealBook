@@ -33,7 +33,7 @@ async function syncPartitions() {
         
         const result = await cloudinary.api.resources({
             type: 'upload',
-            resource_type: 'raw', 
+            resource_type: 'image', 
             max_results: 100
         });
 
@@ -60,10 +60,11 @@ async function syncPartitions() {
 
                 // Insertion dans Neon (si le public_id existe déjà, on ne fait rien)
                 await sql`
-                    INSERT INTO partitions (title, composer, musical_key, file_url, public_id)
-                    VALUES (${title}, ${composer}, ${key}, ${file.secure_url}, ${file.public_id})
-                    ON CONFLICT (public_id) DO NOTHING;
+                INSERT INTO partitions (title, composer, musical_key, category, name_pdf, pdf_url)
+                VALUES (${title}, ${composer}, ${key}, ${"Realbook"}, ${file.public_id}, ${file.secure_url})
+                ON CONFLICT (name_pdf) DO NOTHING;
                 `;
+            
             }
         }
         console.log("✅ Synchronisation terminée avec succès !");
