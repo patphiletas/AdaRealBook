@@ -12,11 +12,7 @@ const PORT = 3001;
 
 import cors from "cors";
 
-app.use(cors({
-  origin: [
-    "https://ada-real-book-o01b75ksy-patphiletas-projects.vercel.app"
-  ]
-}));
+app.use(cors());
 app.use(express.json());
 
 
