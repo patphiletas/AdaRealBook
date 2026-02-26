@@ -26,7 +26,6 @@ cloudinary.config({
 });
 
 
-
 async function syncPartitions() {
     try {
         console.log("🔍 Étape 1 : Récupération des fichiers sur Cloudinary...");
