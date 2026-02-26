@@ -24,12 +24,21 @@ export default function App() {
   const [pdfWidth, setPdfWidth] = useState(600);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
+  // useEffect(() => {
+  //   fetch(`${import.meta.env.VITE_API_URL}/api/partitions`)
+  //     .then(res => res.json())
+  //     .then(data => setPartitions(data))
+  //     .catch(err => console.error("Erreur :", err));
+  // }, []);
+
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/partitions`)
-      .then(res => res.json())
-      .then(data => setPartitions(data))
-      .catch(err => console.error("Erreur :", err));
-  }, []);
+  console.log("API URL =", import.meta.env.VITE_API_URL);
+
+  fetch(`${import.meta.env.VITE_API_URL}/api/partitions`)
+    .then(res => res.json())
+    .then(data => setPartitions(data))
+    .catch(err => console.error("Erreur :", err));
+}, []);
 
   const updateLayout = useCallback(() => {
     const w = window.innerWidth;
