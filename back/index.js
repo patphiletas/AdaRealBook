@@ -10,8 +10,12 @@ const PORT = 3001;
 // --- CONFIGURATION ---
 
 
+import cors from "cors";
+
 app.use(cors({
-  origin: ['https://ada-real-book.vercel.app', 'http://localhost:5173'] 
+  origin: [
+    "https://ada-real-book-o01b75ksy-patphiletas-projects.vercel.app"
+  ]
 }));
 app.use(express.json());
 
