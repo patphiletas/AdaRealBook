@@ -10,13 +10,11 @@ const PORT = process.env.PORT || 3001;
 // --- CONFIGURATION ---
 
 
-import cors from "cors";
-
 app.use(cors());
 app.use(express.json());
 
 
-const sql = postgres(process.env.DATABASE_url, { ssl: 'require' });
+const sql = postgres(process.env.DATABASE_URL, { ssl: 'require' });
 
 
 cloudinary.config({ 
