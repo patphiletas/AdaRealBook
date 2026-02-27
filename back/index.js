@@ -9,20 +9,16 @@ const PORT = process.env.PORT || 3001;
 
 // --- CONFIGURATION ---
 
-
 app.use(cors());
 app.use(express.json());
 
-
 const sql = postgres(process.env.DATABASE_URL, { ssl: 'require' });
 
-
-cloudinary.config({ 
-    cloud_name: 'dpnudoyxb', 
-    api_key: '392895888158834', 
-    api_secret: 'awLuzuRDdU3nSVk30pwls-hL8I4' 
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
-
 
 async function syncPartitions() {
     try {
@@ -50,12 +46,12 @@ async function syncPartitions() {
                 let composer = parts[1]?.trim() || "Compositeur inconnu";
                 let keySuffix = parts[2]?.trim() || "N/C";
 
-                // Nettoyage du suffixe aléatoire de Cloudinary sur la tonalité (ex: "C abc123" -> "C")
+                // Nettoyage du suffixe aléatoire de Cloudinary sur la tonalité 
                 let key = keySuffix.split(' ')[0];
 
                 console.log(`➕ Ajout en base : ${title} (${composer})`);
 
-                // Insertion dans Neon (si le public_id existe déjà, on ne fait rien)
+                // Insertion dans Neon 
                 await sql`
                 INSERT INTO partitions (title, composer, musical_key, category, name_pdf, pdf_url)
                 VALUES (${title}, ${composer}, ${key}, ${"Realbook"}, ${file.public_id}, ${file.secure_url})
