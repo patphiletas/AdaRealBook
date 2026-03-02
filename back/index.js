@@ -78,6 +78,34 @@ app.get('/api/partitions', async (req, res) => {
     }
 });
 
+app.put("/partitions/:id", async (req, res) => {
+  const { id } = req.params;
+  const { title, composer, musical_key, category } = req.body;
+
+  try {
+    const result = await pool.query(
+      `UPDATE partitions
+       SET title = $1,
+           composer = $2,
+           musical_key = $3,
+           category = $4
+       WHERE id = $5
+       RETURNING *`,
+      [title, composer, musical_key, category, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Partition non trouvée" });
+    }
+
+    res.json(result.rows[0]);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
 // Route pour déclencher une nouvelle synchro manuellement via le navigateur
 app.get('/api/sync', async (req, res) => {
     await syncPartitions();
