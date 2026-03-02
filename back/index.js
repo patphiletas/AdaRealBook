@@ -66,7 +66,7 @@ async function syncPartitions() {
     }
 }
 
-// --- ROUTES API (POUR LE FRONT) ---
+// --- ROUTES POUR LE FRONT ---
 
 // Route pour récupérer toutes les partitions
 app.get('/api/partitions', async (req, res) => {
@@ -78,27 +78,29 @@ app.get('/api/partitions', async (req, res) => {
     }
 });
 
-app.put("/partitions/:id", async (req, res) => {
+
+// Route pour corriger titre / compositeur / musica_Key  (encore inutilisée)
+
+app.put("/api/partitions/:id", async (req, res) => {
   const { id } = req.params;
   const { title, composer, musical_key, category } = req.body;
 
   try {
-    const result = await pool.query(
-      `UPDATE partitions
-       SET title = $1,
-           composer = $2,
-           musical_key = $3,
-           category = $4
-       WHERE id = $5
-       RETURNING *`,
-      [title, composer, musical_key, category, id]
-    );
+    const result = await sql`
+      UPDATE partitions
+      SET title = ${title},
+          composer = ${composer},
+          musical_key = ${musical_key},
+          category = ${category}
+      WHERE id = ${id}
+      RETURNING *
+    `;
 
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       return res.status(404).json({ message: "Partition non trouvée" });
     }
 
-    res.json(result.rows[0]);
+    res.json(result[0]);
 
   } catch (error) {
     console.error(error);
