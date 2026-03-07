@@ -6,9 +6,13 @@ export interface Partition {
   name_pdf: string;
   category: string;
 }
-  
 
- export interface SearchListProps {
+export interface SongInsight {
+  composerWord: string;
+  anecdotes: string[];
+}
+
+export interface SearchListProps {
   partitions: Partition[];
   search: string;
   onSearchChange: (value: string) => void;
@@ -28,7 +32,7 @@ export interface PdfViewerProps {
   onZoomReset: () => void;
 }
 
-export interface MobileViewerProps {   
+export interface MobileViewerProps {
   partition: Partition;
   pdfUrl: string;
   numPages: number;
@@ -39,4 +43,8 @@ export interface MobileViewerProps {
   onZoomOut: () => void;
   onZoomReset: () => void;
   onBack: () => void;
+  insight: SongInsight | null;
+  insightLoading: boolean;
+  insightError: string | null;
+  onGenerateInsight: () => void;
 }

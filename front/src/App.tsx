@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-// @ts-ignore
 import { pdfjs } from 'react-pdf';
 import SearchList from './components/SearchList';
 import PdfViewer from './components/PdfViewer';
@@ -7,13 +6,11 @@ import MobileViewer from './components/MobileViewer';
 import "./styles/PdfViewer.css";
 import "./styles/MobileViewer.css";
 
-import type { Partition } from './types/interface';
+import type { Partition, SongInsight } from './types/interface';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@5.4.296/build/pdf.worker.min.mjs`;
 
 const CLOUDINARY_BASE = "https://res.cloudinary.com/dpnudoyxb/image/upload";
-
-
 
 export default function App() {
   const [partitions, setPartitions] = useState<Partition[]>([]);
@@ -24,21 +21,48 @@ export default function App() {
   const [pdfWidth, setPdfWidth] = useState(600);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
-  // useEffect(() => {
-  //   fetch(`${import.meta.env.VITE_API_URL}/api/partitions`)
-  //     .then(res => res.json())
-  //     .then(data => setPartitions(data))
-  //     .catch(err => console.error("Erreur :", err));
-  // }, []);
+  const [insight, setInsight] = useState<SongInsight | null>(null);
+  const [insightLoading, setInsightLoading] = useState(false);
+  const [insightError, setInsightError] = useState<string | null>(null);
 
   useEffect(() => {
-  console.log("API URL =", import.meta.env.VITE_API_URL);
+    fetch(`${import.meta.env.VITE_API_URL}/api/partitions`)
+      .then(res => res.json())
+      .then(data => setPartitions(data))
+      .catch(err => console.error("Erreur :", err));
+  }, []);
 
-  fetch(`${import.meta.env.VITE_API_URL}/api/partitions`)
-    .then(res => res.json())
-    .then(data => setPartitions(data))
-    .catch(err => console.error("Erreur :", err));
-}, []);
+  const handleGenerateInsight = useCallback(async () => {
+    if (!selected) return;
+
+    setInsight(null);
+    setInsightError(null);
+    setInsightLoading(true);
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/ai/song-insight`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: selected.title,
+          composer: selected.composer
+        })
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || 'Erreur IA');
+      }
+
+      const data: SongInsight = await res.json();
+      setInsight(data);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Impossible de charger les anecdotes';
+      setInsightError(message);
+    } finally {
+      setInsightLoading(false);
+    }
+  }, [selected]);
 
   const updateLayout = useCallback(() => {
     const w = window.innerWidth;
@@ -55,6 +79,9 @@ export default function App() {
   useEffect(() => {
     setNumPages(0);
     setScale(1);
+    setInsight(null);
+    setInsightError(null);
+    setInsightLoading(false);
   }, [selected]);
 
   const pdfUrl = selected ? `${CLOUDINARY_BASE}/${selected.name_pdf}.pdf` : null;
@@ -76,6 +103,10 @@ export default function App() {
         onZoomOut={zoomOut}
         onZoomReset={zoomReset}
         onBack={() => setSelected(null)}
+        insight={insight}
+        insightLoading={insightLoading}
+        insightError={insightError}
+        onGenerateInsight={handleGenerateInsight}
       />
     );
   }
@@ -99,6 +130,40 @@ export default function App() {
           </div>
         )}
       </header>
+
+      {selected && (
+        <section className="shrink-0 px-6 py-3 border-b border-amber-100 bg-amber-50">
+          <button
+            type="button"
+            onClick={handleGenerateInsight}
+            disabled={insightLoading}
+            className="mb-2 px-3 py-1 text-sm rounded bg-amber-100 text-amber-900 disabled:opacity-60"
+          >
+            {insightLoading ? "Génération..." : "Générer les anecdotes IA"}
+          </button>
+
+          {insightLoading && (
+            <p className="text-sm text-amber-800">Génération des anecdotes IA...</p>
+          )}
+
+          {insightError && (
+            <p className="text-sm text-red-600">{insightError}</p>
+          )}
+
+          {!insightLoading && !insightError && insight && (
+            <div>
+              <p className="text-sm text-slate-700">
+                <span className="font-semibold">Mot-clé compositeur:</span> {insight.composerWord}
+              </p>
+              <ul className="mt-1 text-sm text-slate-700 list-disc pl-5 space-y-1">
+                {insight.anecdotes.map((anecdote, index) => (
+                  <li key={`${index}-${anecdote}`}>{anecdote}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
+      )}
 
       <div className="flex flex-1 min-h-0">
         {isMobile ? (
