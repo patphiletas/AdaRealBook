@@ -9,6 +9,8 @@ export interface Partition {
 
 export interface SongInsight {
   composerWord: string;
+  tonalite: string;
+  grille: string;
   anecdotes: string[];
 }
 
@@ -43,8 +45,6 @@ export interface MobileViewerProps {
   onZoomOut: () => void;
   onZoomReset: () => void;
   onBack: () => void;
-  insight: SongInsight | null;
   insightLoading: boolean;
-  insightError: string | null;
-  onGenerateInsight: () => void;
+  onOpenInsight: () => void;
 }

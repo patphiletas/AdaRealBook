@@ -1,1 +1,28 @@
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap");
+
+:root {
+  --ada-bg-1: #f9f5ee;
+  --ada-bg-2: #f2ece2;
+  --ada-paper: #fffdf7;
+  --ada-ink: #231f1b;
+  --ada-muted: #655d55;
+  --ada-accent: #b7753d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Manrope", "Avenir Next", "Segoe UI", sans-serif;
+  color: var(--ada-ink);
+  background: linear-gradient(180deg, var(--ada-bg-1) 0%, var(--ada-bg-2) 100%);
+}
+
+h1,
+h2,
+h3 {
+  font-family: "Fraunces", Georgia, serif;
+}

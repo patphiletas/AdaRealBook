@@ -49,21 +49,25 @@ function extractResponseText(responseJson) {
 
 function normalizeInsight(data) {
   const composerWord = typeof data?.composerWord === 'string' ? data.composerWord.trim() : '';
+  const tonalite = typeof data?.tonalite === 'string' ? data.tonalite.trim() : '';
+  const grille = typeof data?.grille === 'string' ? data.grille.trim() : '';
   const anecdotesRaw = Array.isArray(data?.anecdotes) ? data.anecdotes : [];
 
   const anecdotes = anecdotesRaw
     .filter((item) => typeof item === 'string')
     .map((item) => item.trim())
     .filter(Boolean)
-    .slice(0, 3);
+    .slice(0, 6);
 
-  if (!composerWord || anecdotes.length !== 3) {
+  if (!composerWord || !tonalite || !grille || anecdotes.length < 3 || anecdotes.length > 6) {
     return null;
   }
 
   return {
     composerWord,
-    anecdotes
+    tonalite,
+    grille,
+    anecdotes,
   };
 }
 
@@ -89,7 +93,7 @@ async function generateSongInsight({ title, composer }) {
         content: [
           {
             type: 'input_text',
-            text: `Morceau: "${title}"\nCompositeur principal: "${composer}"\n\nRenvoie un objet JSON avec exactement:\n- composerWord: une petite biographie du compositeur principal avec le lien vers wikipedia\n- anecdotes: un tableau de 3 anecdotes sur la genèse du morceau\n-donne moi des éléments techniques sur le morceau comme la tonalité, la structure\n\nRègles:\n- Si l'information n'est pas certaine, indique-le dans l'anecdote avec prudence (ex: "selon plusieurs sources").\n- Pas de markdown.`
+            text: `Morceau: "${title}"\nCompositeur principal: "${composer}"\n\nRenvoie un objet JSON avec exactement:\n- composerWord: une petite biographie du compositeur principal avec un lien Wikipedia en texte brut\n- tonalite: tonalité principale du morceau (ex: "F minor", "Bb major"), ou "Incertaine" si non confirmée\n- grille: la grille harmonique en texte brut sur plusieurs lignes (format lisible, sans markdown)\n- anecdotes: un tableau de 3 à 6 anecdotes sur la genèse du morceau\n\nRègles:\n- Si une information n'est pas certaine, indique-le explicitement.\n- Pas de markdown.\n- Réponds en français.`
           }
         ]
       }
@@ -103,19 +107,21 @@ async function generateSongInsight({ title, composer }) {
           additionalProperties: false,
           properties: {
             composerWord: { type: 'string' },
+            tonalite: { type: 'string' },
+            grille: { type: 'string' },
             anecdotes: {
               type: 'array',
               minItems: 3,
-              maxItems: 3,
+              maxItems: 6,
               items: { type: 'string' }
             }
           },
-          required: ['composerWord', 'anecdotes']
+          required: ['composerWord', 'tonalite', 'grille', 'anecdotes']
         },
         strict: true
       }
     },
-    max_output_tokens: 250,
+    max_output_tokens: 500,
     temperature: 0.5
   };
 

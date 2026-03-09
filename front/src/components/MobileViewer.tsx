@@ -16,13 +16,34 @@ export default function MobileViewer({
   onZoomOut,
   onZoomReset,
   onBack,
-  insight,
   insightLoading,
-  insightError,
-  onGenerateInsight,
+  onOpenInsight,
 }: MobileViewerProps) {
 
   const pageWidth = pdfWidth * scale;
+  const handleDownload = () => {
+    const link = document.createElement("a");
+    link.href = pdfUrl;
+    link.download = `${partition.title}.pdf`;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
+
+  const handlePrint = () => {
+    const printWindow = window.open(pdfUrl, "_blank", "noopener,noreferrer");
+    if (!printWindow) return;
+    printWindow.focus();
+    window.setTimeout(() => {
+      try {
+        printWindow.print();
+      } catch {
+        // Some browsers block programmatic print on PDF viewers.
+      }
+    }, 900);
+  };
 
   return (
     <div className="mobileviewer-container">
@@ -42,33 +63,11 @@ export default function MobileViewer({
 
           <button
             type="button"
-            onClick={onGenerateInsight}
-            disabled={insightLoading}
-            className="mt-2 px-2 py-1 text-xs rounded bg-amber-100 text-amber-900 disabled:opacity-60"
+            onClick={onOpenInsight}
+            className="mobileviewer-insight-button"
           >
-            {insightLoading ? "Génération..." : "Générer les anecdotes IA"}
+            {insightLoading ? "Analyse IA en cours..." : "Ouvrir la fiche IA"}
           </button>
-
-          {insightLoading && (
-            <p className="text-xs text-amber-700 mt-1">Génération des anecdotes IA...</p>
-          )}
-
-          {insightError && (
-            <p className="text-xs text-red-600 mt-1">{insightError}</p>
-          )}
-
-          {!insightLoading && !insightError && insight && (
-            <div className="mt-2 text-left text-xs text-slate-700">
-              <p>
-                <span className="font-semibold">Mot-clé:</span> {insight.composerWord}
-              </p>
-              <ul className="list-disc pl-5 mt-1 space-y-1">
-                {insight.anecdotes.map((anecdote, index) => (
-                  <li key={`${index}-${anecdote}`}>{anecdote}</li>
-                ))}
-              </ul>
-            </div>
-          )}
         </div>
       </div>
 
@@ -90,6 +89,14 @@ export default function MobileViewer({
           className="mobileviewer-button mobileviewer-button-reset"
         >
           Reset
+        </button>
+
+        <button onClick={handleDownload} className="mobileviewer-button mobileviewer-button-action">
+          Télécharger
+        </button>
+
+        <button onClick={handlePrint} className="mobileviewer-button mobileviewer-button-action">
+          Imprimer
         </button>
       </div>
 

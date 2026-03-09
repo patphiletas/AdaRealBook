@@ -26,6 +26,31 @@ export default function PdfViewer({
   onZoomOut,
   onZoomReset,
 }: PdfViewerProps) {
+  const handleDownload = () => {
+    if (!pdfUrl) return;
+    const link = document.createElement("a");
+    link.href = pdfUrl;
+    link.download = "partition.pdf";
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
+
+  const handlePrint = () => {
+    if (!pdfUrl) return;
+    const printWindow = window.open(pdfUrl, "_blank", "noopener,noreferrer");
+    if (!printWindow) return;
+    printWindow.focus();
+    window.setTimeout(() => {
+      try {
+        printWindow.print();
+      } catch {
+        // Some browsers block programmatic print on PDF viewers.
+      }
+    }, 900);
+  };
 
   if (!pdfUrl) {
     return (
@@ -57,6 +82,15 @@ export default function PdfViewer({
           className="pdfviewer-button pdfviewer-button-reset"
         >
           Reset
+        </button>
+
+        <div className="pdfviewer-toolbar-spacer" />
+
+        <button onClick={handleDownload} className="pdfviewer-button pdfviewer-button-action">
+          Télécharger PDF
+        </button>
+        <button onClick={handlePrint} className="pdfviewer-button pdfviewer-button-action">
+          Imprimer
         </button>
       </div>
 
