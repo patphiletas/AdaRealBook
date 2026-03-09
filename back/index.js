@@ -89,7 +89,7 @@ async function generateSongInsight({ title, composer }) {
         content: [
           {
             type: 'input_text',
-            text: `Morceau: "${title}"\nCompositeur principal: "${composer}"\n\nRenvoie un objet JSON avec exactement:\n- composerWord: une petite biographie du compositeur principal\n- anecdotes: un tableau de 3 anecdotes sur la genèse du morceau\n\nRègles:\n- Si l'information n'est pas certaine, indique-le dans l'anecdote avec prudence (ex: "selon plusieurs sources").\n- Pas de markdown.`
+            text: `Morceau: "${title}"\nCompositeur principal: "${composer}"\n\nRenvoie un objet JSON avec exactement:\n- composerWord: une petite biographie du compositeur principal avec le lien vers wikipedia\n- anecdotes: un tableau de 3 anecdotes sur la genèse du morceau\n-donne moi des éléments techniques sur le morceau comme la tonalité, la structure\n\nRègles:\n- Si l'information n'est pas certaine, indique-le dans l'anecdote avec prudence (ex: "selon plusieurs sources").\n- Pas de markdown.`
           }
         ]
       }
