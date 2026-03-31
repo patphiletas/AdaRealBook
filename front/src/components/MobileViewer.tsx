@@ -66,7 +66,7 @@ export default function MobileViewer({
             onClick={onOpenInsight}
             className="mobileviewer-insight-button"
           >
-            {insightLoading ? "Analyse IA en cours..." : "Ouvrir la fiche IA"}
+            {insightLoading ? "Analyse IA en cours..." : "Ouvrir la fiche"}
           </button>
         </div>
       </div>

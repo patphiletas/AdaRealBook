@@ -11,6 +11,7 @@ import type { Partition, SongInsight } from './types/interface';
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@5.4.296/build/pdf.worker.min.mjs`;
 
 const CLOUDINARY_BASE = "https://res.cloudinary.com/dpnudoyxb/image/upload";
+const MOBILE_BREAKPOINT = 860;
 
 export default function App() {
   const [partitions, setPartitions] = useState<Partition[]>([]);
@@ -19,7 +20,7 @@ export default function App() {
   const [numPages, setNumPages] = useState(0);
   const [scale, setScale] = useState(1);
   const [pdfWidth, setPdfWidth] = useState(600);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < MOBILE_BREAKPOINT);
 
   const [insight, setInsight] = useState<SongInsight | null>(null);
   const [insightLoading, setInsightLoading] = useState(false);
@@ -77,8 +78,8 @@ export default function App() {
 
   const updateLayout = useCallback(() => {
     const w = window.innerWidth;
-    setIsMobile(w < 1024);
-    setPdfWidth(w < 1024 ? w - 32 : Math.floor(w * 0.66 - 48));
+    setIsMobile(w < MOBILE_BREAKPOINT);
+    setPdfWidth(w < MOBILE_BREAKPOINT ? w - 32 : Math.floor(w * 0.66 - 48));
   }, []);
 
   useEffect(() => {
@@ -123,7 +124,7 @@ export default function App() {
           <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-6">
             <div className="w-full sm:max-w-2xl sm:rounded-2xl rounded-t-2xl border border-amber-200/50 bg-[linear-gradient(145deg,#fffdf7_0%,#fff6ea_45%,#fbe9d7_100%)] shadow-2xl">
               <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-amber-300/40">
-                <h2 className="text-base sm:text-lg font-bold tracking-tight text-amber-950">Fiche OpenAI</h2>
+                <h2 className="text-base sm:text-lg font-bold tracking-tight text-amber-950">Fiche de {selected.composer}</h2>
                 <button type="button" onClick={handleCloseInsight} className="rounded-full px-3 py-1 text-xs font-semibold bg-amber-100 text-amber-900 hover:bg-amber-200">
                   Fermer
                 </button>
@@ -174,7 +175,24 @@ export default function App() {
   return (
     <div className="h-screen flex flex-col bg-[linear-gradient(180deg,#f9f5ee_0%,#f6f1e8_58%,#f2ece2_100%)] overflow-hidden">
 
-      <header className="shrink-0 px-6 py-3 bg-white/80 border-b border-amber-200/60 shadow-sm backdrop-blur-sm flex items-center justify-between">
+      <header className="relative shrink-0 overflow-hidden border-b border-amber-300/70 bg-[linear-gradient(180deg,rgba(255,251,243,0.96)_0%,rgba(252,244,230,0.94)_100%)] px-6 py-3 shadow-sm backdrop-blur-sm">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 opacity-60"
+          style={{
+            backgroundImage: `
+              radial-gradient(circle at 85% 20%, rgba(217, 119, 6, 0.14), transparent 28%),
+              linear-gradient(to bottom, rgba(120, 90, 40, 0.08) 0px, rgba(120, 90, 40, 0.08) 1px, transparent 1px, transparent 18px)
+            `,
+            backgroundSize: '100% 100%, 100% 18px',
+            backgroundPosition: 'center, 0 10px',
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-10 top-0 h-24 w-24 rounded-full bg-amber-200/30 blur-2xl"
+        />
+        <div className="relative z-10 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-stone-900 tracking-tight">
             My Real Book <span className="text-amber-700">🎷</span>
@@ -196,6 +214,7 @@ export default function App() {
             </button>
           </div>
         )}
+        </div>
       </header>
 
       <div className="flex flex-1 min-h-0">
