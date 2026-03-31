@@ -55,8 +55,13 @@ export default function PdfViewer({
   if (!pdfUrl) {
     return (
       <div className="pdfviewer-empty">
-        <span className="pdfviewer-empty-icon">🎼</span>
-        <p className="pdfviewer-empty-text">Sélectionne un morceau</p>
+        <div className="pdfviewer-empty-hero" aria-hidden="true">
+          <img src="/sax.jpg" alt="" className="pdfviewer-empty-image" />
+        </div>
+        <div className="pdfviewer-empty-card">
+          <p className="pdfviewer-empty-kicker">Jazz Library</p>
+          <p className="pdfviewer-empty-text">Sélectionnez un morceau pour afficher la partition</p>
+        </div>
       </div>
     );
   }

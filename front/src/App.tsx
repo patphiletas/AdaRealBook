@@ -175,43 +175,61 @@ export default function App() {
   return (
     <div className="h-screen flex flex-col bg-[linear-gradient(180deg,#f9f5ee_0%,#f6f1e8_58%,#f2ece2_100%)] overflow-hidden">
 
-      <header className="relative shrink-0 overflow-hidden border-b border-amber-300/70 bg-[linear-gradient(180deg,rgba(255,251,243,0.96)_0%,rgba(252,244,230,0.94)_100%)] px-6 py-3 shadow-sm backdrop-blur-sm">
+      <header className="relative shrink-0 overflow-hidden border-b border-stone-200/80 bg-[linear-gradient(180deg,rgba(255,255,252,0.98)_0%,rgba(247,243,237,0.96)_100%)] px-6 py-4 shadow-sm backdrop-blur-sm">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 opacity-60"
+          className="pointer-events-none absolute inset-0 opacity-50"
           style={{
             backgroundImage: `
-              radial-gradient(circle at 85% 20%, rgba(217, 119, 6, 0.14), transparent 28%),
-              linear-gradient(to bottom, rgba(120, 90, 40, 0.08) 0px, rgba(120, 90, 40, 0.08) 1px, transparent 1px, transparent 18px)
+              radial-gradient(circle at 18% 10%, rgba(41, 37, 36, 0.05), transparent 26%),
+              linear-gradient(to right, rgba(87, 83, 78, 0.06) 0px, rgba(87, 83, 78, 0.06) 1px, transparent 1px, transparent 22px)
             `,
-            backgroundSize: '100% 100%, 100% 18px',
-            backgroundPosition: 'center, 0 10px',
+            backgroundSize: '100% 100%, 22px 100%',
+            backgroundPosition: 'center, 0 0',
           }}
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -right-10 top-0 h-24 w-24 rounded-full bg-amber-200/30 blur-2xl"
+          className="pointer-events-none absolute right-10 top-0 h-20 w-32 rounded-full bg-stone-300/20 blur-3xl"
         />
-        <div className="relative z-10 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-stone-900 tracking-tight">
-            My Real Book <span className="text-amber-700">🎷</span>
-          </h1>
-          <p className="text-stone-500 text-xs">{partitions.length} morceaux · Volume 1</p>
+        <div className="relative z-10 flex items-center justify-between gap-6">
+        <div className="min-w-0 flex items-center gap-3">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center">
+            <img
+              src="/sax.png"
+              alt=""
+              aria-hidden="true"
+              className="h-12 w-12 object-contain opacity-90"
+            />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-stone-500">
+              Jazz Library
+            </p>
+            <h1 className="mt-1 text-2xl font-semibold tracking-[-0.03em] text-stone-900">
+              Ada Real Book
+            </h1>
+            <p className="mt-1 text-sm text-stone-500">{partitions.length} morceaux · Volume 1</p>
+          </div>
         </div>
         {selected && !isMobile && (
-          <div className="text-right space-y-1">
-            <p className="font-semibold text-stone-900 text-sm">{selected.title}</p>
-            <p className="text-stone-600 text-xs">
+          <div className="max-w-sm rounded-2xl border border-stone-200/80 bg-white/75 px-4 py-2.5 shadow-[0_10px_30px_-20px_rgba(28,25,23,0.45)]">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-500">Morceau en cours</p>
+                <p className="mt-0.5 truncate text-[13px] font-semibold text-stone-900">{selected.title}</p>
+                <p className="truncate text-xs text-stone-600">
               {selected.composer} · <span className="font-mono">{selected.musical_key}</span> · <em>{selected.category}</em>
-            </p>
-            <button
-              type="button"
-              onClick={handleOpenInsight}
-              className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900 hover:bg-amber-200"
-            >
-              Ouvrir la fiche de {selected.composer}
-            </button>
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleOpenInsight}
+                className="shrink-0 rounded-full border border-stone-300 bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-stone-800"
+              >
+                Ouvrir la fiche
+              </button>
+            </div>
           </div>
         )}
         </div>
