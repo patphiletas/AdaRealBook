@@ -207,7 +207,7 @@ export default function App() {
               Jazz Library
             </p>
             <h1 className="mt-1 text-2xl font-semibold tracking-[-0.03em] text-stone-900">
-              Ada Real Book
+              My Real Book
             </h1>
             <p className="mt-1 text-sm text-stone-500">{partitions.length} morceaux · Volume 1</p>
           </div>
