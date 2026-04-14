@@ -20,21 +20,19 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-
-
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
 
 console.log("OpenAI key loaded:", !!process.env.OPENAI_API_KEY);
 
+// --- UTILITAIRES OPENAI ---
+
 function extractResponseText(responseJson) {
   if (typeof responseJson?.output_text === 'string' && responseJson.output_text.trim()) {
     return responseJson.output_text;
   }
-
   const chunks = [];
   const outputs = Array.isArray(responseJson?.output) ? responseJson.output : [];
-
   for (const outputItem of outputs) {
     const content = Array.isArray(outputItem?.content) ? outputItem.content : [];
     for (const contentItem of content) {
@@ -43,7 +41,6 @@ function extractResponseText(responseJson) {
       }
     }
   }
-
   return chunks.join('\n').trim();
 }
 
@@ -63,12 +60,7 @@ function normalizeInsight(data) {
     return null;
   }
 
-  return {
-    composerWord,
-    tonalite,
-    grille,
-    anecdotes,
-  };
+  return { composerWord, tonalite, grille, anecdotes };
 }
 
 async function generateSongInsight({ title, composer }) {
@@ -81,21 +73,14 @@ async function generateSongInsight({ title, composer }) {
     input: [
       {
         role: 'system',
-        content: [
-          {
-            type: 'input_text',
-            text: 'Tu es un assistant expert en histoire du jazz. Réponds uniquement en JSON valide.'
-          }
-        ]
+        content: [{ type: 'input_text', text: 'Tu es un assistant expert en histoire du jazz. Réponds uniquement en JSON valide.' }]
       },
       {
         role: 'user',
-        content: [
-          {
-            type: 'input_text',
-            text: `Morceau: "${title}"\nCompositeur principal: "${composer}"\n\nRenvoie un objet JSON avec exactement:\n- composerWord: une petite biographie du compositeur principal avec un lien Wikipedia en texte brut\n- tonalite: tonalité principale du morceau (ex: "F minor", "Bb major"), ou "Incertaine" si non confirmée\n- grille: la grille harmonique en texte brut sur plusieurs lignes (format lisible, sans markdown)\n- anecdotes: un tableau de 3 à 6 anecdotes sur la genèse du morceau\n\nRègles:\n- Si une information n'est pas certaine, indique-le explicitement.\n- Pas de markdown.\n- Réponds en français.`
-          }
-        ]
+        content: [{
+          type: 'input_text',
+          text: `Morceau: "${title}"\nCompositeur principal: "${composer}"\n\nRenvoie un objet JSON avec exactement:\n- composerWord: une petite biographie du compositeur principal avec un lien Wikipedia en texte brut\n- tonalite: tonalité principale du morceau (ex: "F minor", "Bb major"), ou "Incertaine" si non confirmée\n- grille: la grille harmonique en texte brut sur plusieurs lignes (format lisible, sans markdown)\n- anecdotes: un tableau de 3 à 6 anecdotes sur la genèse du morceau\n\nRègles:\n- Si une information n'est pas certaine, indique-le explicitement.\n- Pas de markdown.\n- Réponds en français.`
+        }]
       }
     ],
     text: {
@@ -109,12 +94,7 @@ async function generateSongInsight({ title, composer }) {
             composerWord: { type: 'string' },
             tonalite: { type: 'string' },
             grille: { type: 'string' },
-            anecdotes: {
-              type: 'array',
-              minItems: 3,
-              maxItems: 6,
-              items: { type: 'string' }
-            }
+            anecdotes: { type: 'array', minItems: 3, maxItems: 6, items: { type: 'string' } }
           },
           required: ['composerWord', 'tonalite', 'grille', 'anecdotes']
         },
@@ -127,10 +107,7 @@ async function generateSongInsight({ title, composer }) {
 
   const response = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${OPENAI_API_KEY}`
-    },
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
     body: JSON.stringify(payload)
   });
 
@@ -142,150 +119,183 @@ async function generateSongInsight({ title, composer }) {
   const responseJson = await response.json();
   const responseText = extractResponseText(responseJson);
 
-  if (!responseText) {
-    throw new Error('Réponse OpenAI vide ou non exploitable.');
-  }
+  if (!responseText) throw new Error('Réponse OpenAI vide ou non exploitable.');
 
   let parsed;
-  try {
-    parsed = JSON.parse(responseText);
-  } catch {
-    throw new Error('Réponse OpenAI non JSON.');
-  }
+  try { parsed = JSON.parse(responseText); } catch { throw new Error('Réponse OpenAI non JSON.'); }
 
   const normalized = normalizeInsight(parsed);
-  if (!normalized) {
-    throw new Error('Format JSON invalide reçu depuis OpenAI.');
-  }
+  if (!normalized) throw new Error('Format JSON invalide reçu depuis OpenAI.');
 
   return normalized;
 }
 
+// --- SYNCHRONISATION CLOUDINARY → BDD ---
+
 async function syncPartitions() {
-    try {
-        console.log("🔍 Étape 1 : Récupération des fichiers sur Cloudinary...");
-        
-        const result = await cloudinary.api.resources({
-            type: 'upload',
-            resource_type: 'image', 
-            max_results: 100
-        });
+  try {
+    console.log("🔍 Récupération des fichiers sur Cloudinary...");
 
-        console.log(`📂 ${result.resources.length} fichiers trouvés.`);
+    const result = await cloudinary.api.resources({
+      type: 'upload',
+      resource_type: 'image',
+      max_results: 100
+    });
 
-        for (const file of result.resources) {
-           
-            if (file.format === 'pdf') {
-                
-                // Nettoyage du nom : remplace les "_" de Cloudinary par des espaces
-                let cleanName = file.public_id.replace(/_/g, ' ');
+    console.log(`📂 ${result.resources.length} fichiers trouvés.`);
 
-                // Découpage du nom : "Titre - Compositeur - Tonalité"
-                let parts = cleanName.split(' - ');
+    for (const file of result.resources) {
+      if (file.format !== 'pdf') continue;
 
-                let title = parts[0]?.trim() || "Titre inconnu";
-                let composer = parts[1]?.trim() || "Compositeur inconnu";
-                let keySuffix = parts[2]?.trim() || "N/C";
+      let cleanName = file.public_id.replace(/_/g, ' ');
+      let parts = cleanName.split(' - ');
+      let title = parts[0]?.trim() || 'Titre inconnu';
+      let composerName = parts[1]?.trim() || 'Compositeur inconnu';
+      let key = (parts[2]?.trim() || 'N/C').split(' ')[0];
 
-                // Nettoyage du suffixe aléatoire de Cloudinary sur la tonalité 
-                let key = keySuffix.split(' ')[0];
+      // Upsert compositeur
+      const [composer] = await sql`
+        INSERT INTO composers (name)
+        VALUES (${composerName})
+        ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
+        RETURNING id
+      `;
 
-                console.log(`➕ Ajout en base : ${title} (${composer})`);
+      // Upsert partition avec composer_id
+      await sql`
+        INSERT INTO partitions (title, composer, composer_id, musical_key, category, name_pdf, pdf_url)
+        VALUES (${title}, ${composerName}, ${composer.id}, ${key}, ${'Realbook'}, ${file.public_id}, ${file.secure_url})
+        ON CONFLICT (name_pdf) DO UPDATE SET composer_id = EXCLUDED.composer_id
+      `;
 
-                // Insertion dans Neon 
-                await sql`
-                INSERT INTO partitions (title, composer, musical_key, category, name_pdf, pdf_url)
-                VALUES (${title}, ${composer}, ${key}, ${"Realbook"}, ${file.public_id}, ${file.secure_url})
-                ON CONFLICT (name_pdf) DO NOTHING;
-                `;
-            
-            }
-        }
-        console.log("✅ Synchronisation terminée avec succès !");
-    } catch (error) {
-        console.error("❌ Erreur lors de la synchro :", error);
+      console.log(`✅ ${title} (${composerName})`);
     }
+
+    console.log("✅ Synchronisation terminée !");
+  } catch (error) {
+    console.error("❌ Erreur synchro :", error);
+  }
 }
 
-// --- ROUTES POUR LE FRONT ---
+// --- ROUTES ---
 
-// Route pour récupérer toutes les partitions
+// GET /api/partitions — liste des partitions avec compositeur
 app.get('/api/partitions', async (req, res) => {
-    try {
-        const data = await sql`SELECT * FROM partitions ORDER BY title ASC`;
-        res.json(data);
-    } catch (error) {
-        res.status(500).json({ error: "Erreur lors de la lecture de la base de données" });
-    }
+  try {
+    const data = await sql`
+      SELECT p.id, p.title, c.name AS composer, p.musical_key, p.category, p.name_pdf, p.pdf_url
+      FROM partitions p
+      LEFT JOIN composers c ON c.id = p.composer_id
+      ORDER BY p.title ASC
+    `;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: "Erreur lors de la lecture de la base de données" });
+  }
 });
 
+// POST /api/ai/song-insight — fiche IA avec cache BDD
 app.post('/api/ai/song-insight', async (req, res) => {
-  const { title, composer } = req.body || {};
+  const { partitionId, title, composer } = req.body || {};
 
-  if (typeof title !== 'string' || !title.trim()) {
-    return res.status(400).json({ error: 'Le champ title est requis.' });
-  }
-
-  if (typeof composer !== 'string' || !composer.trim()) {
-    return res.status(400).json({ error: 'Le champ composer est requis.' });
+  if (!partitionId || typeof title !== 'string' || !title.trim() || typeof composer !== 'string' || !composer.trim()) {
+    return res.status(400).json({ error: 'Les champs partitionId, title et composer sont requis.' });
   }
 
   try {
-    const insight = await generateSongInsight({
-      title: title.trim(),
-      composer: composer.trim()
-    });
+    // 1. Vérifier le cache BDD
+    const cached = await sql`
+      SELECT si.composer_word, si.tonalite, si.grille,
+             array_agg(a.content ORDER BY a.position) AS anecdotes
+      FROM song_insights si
+      JOIN anecdotes a ON a.insight_id = si.id
+      WHERE si.partition_id = ${partitionId}
+      GROUP BY si.id
+    `;
 
+    if (cached.length > 0) {
+      console.log(`💾 Cache hit pour partition ${partitionId}`);
+      const row = cached[0];
+      return res.json({
+        composerWord: row.composer_word,
+        tonalite: row.tonalite,
+        grille: row.grille,
+        anecdotes: row.anecdotes
+      });
+    }
+
+    // 2. Pas en cache → appel OpenAI
+    console.log(`🤖 Génération OpenAI pour "${title}" (${composer})`);
+    const insight = await generateSongInsight({ title: title.trim(), composer: composer.trim() });
+
+    // 3. Sauvegarder en BDD
+    const [savedInsight] = await sql`
+      INSERT INTO song_insights (partition_id, composer_word, tonalite, grille)
+      VALUES (${partitionId}, ${insight.composerWord}, ${insight.tonalite}, ${insight.grille})
+      RETURNING id
+    `;
+
+    for (let i = 0; i < insight.anecdotes.length; i++) {
+      await sql`
+        INSERT INTO anecdotes (insight_id, content, position)
+        VALUES (${savedInsight.id}, ${insight.anecdotes[i]}, ${i})
+      `;
+    }
+
+    console.log(`💾 Insight sauvegardé pour partition ${partitionId}`);
     res.json(insight);
+
   } catch (error) {
     console.error('Erreur génération insight:', error);
     res.status(500).json({ error: 'Impossible de générer les anecdotes IA.' });
   }
 });
 
-
-// Route pour corriger titre / compositeur / musica_Key  (encore inutilisée)
-
+// PUT /api/partitions/:id — modifier titre / compositeur / tonalité / catégorie
 app.put("/api/partitions/:id", async (req, res) => {
   const { id } = req.params;
   const { title, composer, musical_key, category } = req.body;
 
   try {
+    // Upsert compositeur si le nom a changé
+    const [comp] = await sql`
+      INSERT INTO composers (name) VALUES (${composer})
+      ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
+      RETURNING id
+    `;
+
     const result = await sql`
       UPDATE partitions
       SET title = ${title},
           composer = ${composer},
+          composer_id = ${comp.id},
           musical_key = ${musical_key},
           category = ${category}
       WHERE id = ${id}
       RETURNING *
     `;
 
-    if (result.length === 0) {
-      return res.status(404).json({ message: "Partition non trouvée" });
-    }
+    if (result.length === 0) return res.status(404).json({ message: "Partition non trouvée" });
 
     res.json(result[0]);
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
 
-// Route pour déclencher une nouvelle synchro manuellement via le navigateur
+// GET /api/sync — déclencher une synchro manuellement
 app.get('/api/sync', async (req, res) => {
-    await syncPartitions();
-    res.json({ message: "Synchro lancée, vérifie ton terminal !" });
+  await syncPartitions();
+  res.json({ message: "Synchro lancée, vérifie ton terminal !" });
 });
 
-// --- LANCEMENT DU SERVEUR ---
+// --- LANCEMENT ---
 
 app.listen(PORT, () => {
-    console.log(`-----------------------------------------------`);
-    console.log(`🎷 RealBook API lancée sur : http://localhost:${PORT}`);
-    console.log(`📄 Route JSON : http://localhost:${PORT}/api/partitions`);
-    console.log(`-----------------------------------------------`);
-    
-    syncPartitions(); 
+  console.log(`-----------------------------------------------`);
+  console.log(`🎷 RealBook API lancée sur : http://localhost:${PORT}`);
+  console.log(`📄 Route JSON : http://localhost:${PORT}/api/partitions`);
+  console.log(`-----------------------------------------------`);
+  syncPartitions();
 });

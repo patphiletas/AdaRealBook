@@ -46,6 +46,7 @@ export default function App() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          partitionId: selected.id,
           title: selected.title,
           composer: selected.composer
         })
