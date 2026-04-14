@@ -254,33 +254,40 @@ app.post('/api/ai/song-insight', async (req, res) => {
 // PUT /api/partitions/:id — modifier titre / compositeur / tonalité / catégorie
 app.put("/api/partitions/:id", async (req, res) => {
   const { id } = req.params;
-  const { title, composer, musical_key, category } = req.body;
+  const { password, title, composer, musical_key, category } = req.body;
+
+  if (password !== process.env.EDIT_PASSWORD) {
+    return res.status(403).json({ error: "Mot de passe incorrect" });
+  }
+
+  if (!title?.trim() || !composer?.trim()) {
+    return res.status(400).json({ error: "Titre et compositeur obligatoires" });
+  }
 
   try {
-    // Upsert compositeur si le nom a changé
     const [comp] = await sql`
-      INSERT INTO composers (name) VALUES (${composer})
+      INSERT INTO composers (name) VALUES (${composer.trim()})
       ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
       RETURNING id
     `;
 
     const result = await sql`
       UPDATE partitions
-      SET title = ${title},
-          composer = ${composer},
+      SET title = ${title.trim()},
+          composer = ${composer.trim()},
           composer_id = ${comp.id},
-          musical_key = ${musical_key},
-          category = ${category}
+          musical_key = ${musical_key?.trim() || null},
+          category = ${category?.trim() || null}
       WHERE id = ${id}
-      RETURNING *
+      RETURNING id, title, composer, musical_key, category, name_pdf, pdf_url
     `;
 
-    if (result.length === 0) return res.status(404).json({ message: "Partition non trouvée" });
+    if (result.length === 0) return res.status(404).json({ error: "Partition non trouvée" });
 
     res.json(result[0]);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Erreur serveur" });
+    res.status(500).json({ error: "Erreur serveur" });
   }
 });
 

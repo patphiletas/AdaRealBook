@@ -3,6 +3,7 @@ import { pdfjs } from 'react-pdf';
 import SearchList from './components/SearchList';
 import PdfViewer from './components/PdfViewer';
 import MobileViewer from './components/MobileViewer';
+import EditMetadataDialog from './components/EditMetadataDialog';
 import "./styles/PdfViewer.css";
 import "./styles/MobileViewer.css";
 
@@ -77,6 +78,11 @@ export default function App() {
 
   const handleCloseInsight = () => setInsightOpen(false);
 
+  const handlePartitionUpdated = useCallback((updated: Partition) => {
+    setPartitions(prev => prev.map(p => p.id === updated.id ? updated : p));
+    setSelected(updated);
+  }, []);
+
   const updateLayout = useCallback(() => {
     const w = window.innerWidth;
     setIsMobile(w < MOBILE_BREAKPOINT);
@@ -120,6 +126,7 @@ export default function App() {
           onBack={() => setSelected(null)}
           insightLoading={insightLoading}
           onOpenInsight={handleOpenInsight}
+          onPartitionUpdated={handlePartitionUpdated}
         />
         {insightOpen && (
           <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-6">
@@ -223,13 +230,16 @@ export default function App() {
               {selected.composer} · <span className="font-mono">{selected.musical_key}</span> · <em>{selected.category}</em>
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={handleOpenInsight}
-                className="shrink-0 rounded-full border border-stone-300 bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-stone-800"
-              >
-                Ouvrir la fiche
-              </button>
+              <div className="flex shrink-0 gap-2">
+                <EditMetadataDialog partition={selected} onUpdated={handlePartitionUpdated} />
+                <button
+                  type="button"
+                  onClick={handleOpenInsight}
+                  className="rounded-full border border-stone-300 bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-stone-800"
+                >
+                  Ouvrir la fiche
+                </button>
+              </div>
             </div>
           </div>
         )}

@@ -1,31 +1,51 @@
 
+import { useRef, useEffect, useState } from "react";
 import { Document, Page } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import "../styles/PdfViewer.css";
 import type { PdfViewerProps } from "../types/interface.ts";
 
-// interface PdfViewerProps {
-//   pdfUrl: string | null;
-//   numPages: number;
-//   scale: number;
-//   pdfWidth: number;
-//   onLoadSuccess: (numPages: number) => void;
-//   onZoomIn: () => void;
-//   onZoomOut: () => void;
-//   onZoomReset: () => void;
-// }
-
 export default function PdfViewer({
   pdfUrl,
   numPages,
   scale,
-  pdfWidth,
   onLoadSuccess,
   onZoomIn,
   onZoomOut,
   onZoomReset,
 }: PdfViewerProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+  const [pageAspectRatio, setPageAspectRatio] = useState<number | null>(null);
+
+  // Mesure le conteneur de scroll
+  useEffect(() => {
+    if (!scrollRef.current) return;
+    const observer = new ResizeObserver(entries => {
+      const { width, height } = entries[0].contentRect;
+      setContainerSize({ width, height });
+    });
+    observer.observe(scrollRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  // Réinitialise le ratio quand la partition change
+  useEffect(() => {
+    setPageAspectRatio(null);
+  }, [pdfUrl]);
+
+  // Largeur de base pour tenir la page entière (fit-to-view)
+  // min(largeur dispo, hauteur dispo * ratio) avec un peu de marge
+  const availableWidth = containerSize.width - 24;
+  const availableHeight = containerSize.height - 24;
+  const baseWidth =
+    pageAspectRatio && availableWidth > 0 && availableHeight > 0
+      ? Math.min(availableWidth, availableHeight * pageAspectRatio)
+      : availableWidth > 0
+      ? availableWidth
+      : 600;
+
   const handleDownload = () => {
     if (!pdfUrl) return;
     const link = document.createElement("a");
@@ -99,7 +119,7 @@ export default function PdfViewer({
         </button>
       </div>
 
-      <div className="pdfviewer-scroll">
+      <div className="pdfviewer-scroll" ref={scrollRef}>
         <Document
           file={pdfUrl}
           onLoadSuccess={({ numPages }) => onLoadSuccess(numPages)}
@@ -118,7 +138,10 @@ export default function PdfViewer({
             <Page
               key={i + 1}
               pageNumber={i + 1}
-              width={pdfWidth * scale}
+              width={baseWidth * scale}
+              onLoadSuccess={i === 0 ? (page) => {
+                setPageAspectRatio(page.originalWidth / page.originalHeight);
+              } : undefined}
               className="shadow-lg mb-3 rounded overflow-hidden"
             />
           ))}

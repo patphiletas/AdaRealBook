@@ -4,6 +4,7 @@ import "react-pdf/dist/Page/TextLayer.css";
 import "../styles/MobileViewer.css";
 
 import type { MobileViewerProps } from "../types/interface";
+import EditMetadataDialog from "./EditMetadataDialog";
 
 export default function MobileViewer({
   partition,
@@ -18,6 +19,7 @@ export default function MobileViewer({
   onBack,
   insightLoading,
   onOpenInsight,
+  onPartitionUpdated,
 }: MobileViewerProps) {
 
   const pageWidth = pdfWidth * scale;
@@ -61,13 +63,16 @@ export default function MobileViewer({
             {partition.composer} · {partition.musical_key}
           </p>
 
-          <button
-            type="button"
-            onClick={onOpenInsight}
-            className="mobileviewer-insight-button"
-          >
-            {insightLoading ? "Analyse IA en cours..." : "Ouvrir la fiche"}
-          </button>
+          <div className="flex gap-2 mt-1">
+            <button
+              type="button"
+              onClick={onOpenInsight}
+              className="mobileviewer-insight-button"
+            >
+              {insightLoading ? "Analyse IA en cours..." : "Ouvrir la fiche"}
+            </button>
+            <EditMetadataDialog partition={partition} onUpdated={onPartitionUpdated} />
+          </div>
         </div>
       </div>
 

@@ -27,7 +27,7 @@ export interface PdfViewerProps {
   pdfUrl: string | null;
   numPages: number;
   scale: number;
-  pdfWidth: number;
+  pdfWidth?: number;
   onLoadSuccess: (numPages: number) => void;
   onZoomIn: () => void;
   onZoomOut: () => void;
@@ -47,4 +47,5 @@ export interface MobileViewerProps {
   onBack: () => void;
   insightLoading: boolean;
   onOpenInsight: () => void;
+  onPartitionUpdated: (updated: Partition) => void;
 }

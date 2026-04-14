@@ -42,6 +42,8 @@ AdaRealBook est une application web de consultation de partitions jazz. Elle com
 | 🔄 Synchronisation | Import automatique des PDF depuis Cloudinary |
 | 🤖 Fiche IA | Biographie, tonalité, grille et anecdotes générées par OpenAI |
 | 💾 Cache IA | Les fiches générées sont stockées en BDD — affichage instantané dès la 2e ouverture |
+| ✏️ Édition | Modification des métadonnées (titre, compositeur, tonalité, catégorie) protégée par mot de passe |
+| 🔍 Fit-to-view | La partition s'affiche en entier à l'ouverture, zoom libre ensuite |
 
 ---
 
@@ -154,7 +156,7 @@ cd front && npm run dev
 
 ## Prochaines évolutions
 
-- [ ] Édition des métadonnées depuis l'interface
+- [x] Édition des métadonnées depuis l'interface
 - [ ] Filtres avancés (tonalité, époque, style)
 - [ ] Gestion multi-volumes
 - [ ] Favoris, playlists et sets
