@@ -1,165 +1,171 @@
-# AdaRealBook
+<div align="center">
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-111827?style=for-the-badge&logo=vercel)](https://real-book-patphiletas-projects.vercel.app/)
+<img src="assets/jazz-banner.jpg" alt="Jazz saxophone" width="300" style="border-radius: 12px;" />
 
-AdaRealBook est une application web de consultation de partitions jazz façon Real Book.
-Le projet combine un front React/Vite pour la lecture des PDF, une API Express pour exposer les partitions, une base PostgreSQL sur Neon, un stockage Cloudinary pour les fichiers, et une fiche IA générée à la demande pour chaque morceau.
+# 🎷 AdaRealBook
+
+**Une bibliothèque de partitions jazz, façon Real Book.**
+
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-000000?style=for-the-badge&logo=vercel)](https://real-book-patphiletas-projects.vercel.app/)
+&nbsp;
+[![React](https://img.shields.io/badge/React%2019-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
+&nbsp;
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+&nbsp;
+[![Express](https://img.shields.io/badge/Express%205-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+&nbsp;
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://neon.tech/)
+
+</div>
+
+---
 
 ## Aperçu
 
-- Recherche de morceaux par titre, compositeur, catégorie ou tonalité
-- Affichage des partitions PDF dans une interface desktop en split view
-- Vue mobile dédiée avec lecture, zoom, impression et téléchargement
-- Synchronisation des partitions depuis Cloudinary vers PostgreSQL
-- Génération d'une fiche IA avec biographie, tonalité, grille et anecdotes
+<div align="center">
+  <img src="thumbnail.png" alt="Capture d'écran de l'application" width="800" />
+</div>
 
-## Stack
+<br/>
 
-- Frontend : React 19, TypeScript, Vite, Tailwind CSS, `react-pdf`
-- Backend : Node.js, Express 5
-- Base de données : PostgreSQL via Neon
-- Stockage : Cloudinary
-- IA : OpenAI Responses API
+AdaRealBook est une application web de consultation de partitions jazz. Elle combine un front React/Vite pour la lecture des PDF, une API Express, une base PostgreSQL sur Neon, un stockage Cloudinary, et une fiche IA générée à la demande pour chaque morceau.
 
-## Structure
+---
 
-```text
-AdaRealBook/
-├── front/      # interface utilisateur React + Vite
-├── back/       # API Express + synchro Cloudinary/Postgres
-└── README.md
+## Fonctionnalités
+
+| Fonctionnalité | Description |
+|---|---|
+| 🔍 Recherche | Par titre, compositeur, catégorie ou tonalité |
+| 🖥️ Split view | Liste à gauche, partition PDF à droite (desktop) |
+| 📱 Vue mobile | Lecture, zoom, impression et téléchargement |
+| 🔄 Synchronisation | Import automatique des PDF depuis Cloudinary |
+| 🤖 Fiche IA | Biographie, tonalité, grille et anecdotes générées par OpenAI |
+| 💾 Cache IA | Les fiches générées sont stockées en BDD — affichage instantané dès la 2e ouverture |
+
+---
+
+## Stack technique
+
+| Couche | Technologie |
+|---|---|
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS, `react-pdf` |
+| Backend | Node.js, Express 5 |
+| Base de données | PostgreSQL via [Neon](https://neon.tech) |
+| Stockage | [Cloudinary](https://cloudinary.com) |
+| IA | OpenAI Responses API |
+
+---
+
+## Structure du projet
+
 ```
+AdaRealBook/
+├── front/          # Interface React + Vite
+│   └── src/
+│       ├── components/   # SearchList, PdfViewer, MobileViewer
+│       ├── types/        # Interfaces TypeScript
+│       └── App.tsx       # Composant racine
+├── back/
+│   └── index.js          # API Express + sync Cloudinary + cache IA
+└── assets/               # Images du README
+```
+
+---
+
+## Schéma de base de données
+
+```
+composers         partitions              song_insights       anecdotes
+─────────         ──────────              ─────────────       ─────────
+id                id                      id                  id
+name ──────────── composer_id (FK)        partition_id (FK)   insight_id (FK)
+                  title                   composer_word       content
+                  musical_key             tonalite            position
+                  category                grille
+                  name_pdf                created_at
+                  pdf_url
+```
+
+> Un insight OpenAI n'est généré **qu'une seule fois** par morceau puis mis en cache dans `song_insights`.
+
+---
 
 ## Installation
 
-Prérequis :
-
-- Node.js 20+ recommandé
-- Un projet Cloudinary avec des PDF disponibles
-- Une base PostgreSQL accessible
-- Une clé API OpenAI
-
-Installer les dépendances :
-
 ```bash
+# Dépendances
 cd front && npm install
 cd ../back && npm install
 ```
 
-## Variables d'environnement
-
-Créer les fichiers suivants :
-
-`front/.env`
-
+**`front/.env`**
 ```env
 VITE_API_URL=http://localhost:3001
 ```
 
-`back/.env`
-
+**`back/.env`**
 ```env
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
-
 DATABASE_URL=postgresql://user:password@host:5432/database?sslmode=require
-
 OPENAI_API_KEY=your_openai_api_key
 OPENAI_MODEL=gpt-4.1-mini
 PORT=3001
 ```
 
-## Lancer le projet
+---
 
-Dans un terminal pour l'API :
-
-```bash
-cd back
-npm run dev
-```
-
-Dans un second terminal pour le front :
+## Lancement
 
 ```bash
-cd front
-npm run dev
-```
+# Terminal 1 — API
+cd back && npm run dev
 
-Application disponible sur :
+# Terminal 2 — Front
+cd front && npm run dev
+```
 
 - Front : `http://127.0.0.1:5173`
 - API : `http://localhost:3001`
 
-## Endpoints utiles
+---
 
-- `GET /api/partitions`
-  Retourne la liste des partitions triées par titre.
+## Endpoints API
 
-- `POST /api/ai/song-insight`
-  Génère une fiche IA pour un morceau à partir de son titre et de son compositeur.
+| Méthode | Route | Description |
+|---|---|---|
+| `GET` | `/api/partitions` | Liste des partitions avec compositeur |
+| `POST` | `/api/ai/song-insight` | Fiche IA (cache BDD en priorité) |
+| `PUT` | `/api/partitions/:id` | Modifier titre / compositeur / tonalité |
+| `GET` | `/api/sync` | Déclencher une synchro Cloudinary manuellement |
 
-Exemple de payload :
-
+**Payload `POST /api/ai/song-insight` :**
 ```json
 {
+  "partitionId": 42,
   "title": "Autumn Leaves",
   "composer": "Joseph Kosma"
 }
 ```
 
-## Fonctionnement
+---
 
-Au démarrage du back, l'application interroge Cloudinary, récupère les PDF disponibles, nettoie leurs métadonnées à partir du nom de fichier, puis insère les partitions en base si elles n'existent pas déjà.
+## Prochaines évolutions
 
-Côté front :
+- [ ] Édition des métadonnées depuis l'interface
+- [ ] Filtres avancés (tonalité, époque, style)
+- [ ] Gestion multi-volumes
+- [ ] Favoris, playlists et sets
+- [ ] Authentification
 
-- la liste des morceaux est chargée depuis l'API
-- un morceau sélectionné ouvre le PDF correspondant
-- l'interface s'adapte entre desktop et mobile
-- la fiche IA est ouverte à la demande pour éviter les appels inutiles
+---
 
-## État actuel
+<div align="center">
 
-Le projet est pensé comme une base fonctionnelle pour un Real Book personnel :
+Développé autour d'une bibliothèque personnelle de partitions jazz · Patrice Philétas 2026
 
-- catalogue de partitions
-- consultation fluide
-- enrichissement éditorial par IA
+<sub>Photo : <a href="https://commons.wikimedia.org/wiki/File:New_Orleans_Jazz_Fest_2011_saxophone_and_guitar.jpg">Tulane Public Relations</a> · CC BY 2.0 · New Orleans Jazz Fest 2011</sub>
 
-Les prochaines évolutions naturelles seraient :
-
-- édition des métadonnées depuis l'interface
-- filtres plus avancés
-- gestion multi-volumes
-- favoris, playlists ou sets
-- authentification
-
-## Scripts
-
-Frontend :
-
-```bash
-npm run dev
-npm run build
-npm run lint
-npm run preview
-```
-
-Backend :
-
-```bash
-npm run dev
-npm start
-```
-
-## Notes
-
-- Le backend dépend d'un accès réseau effectif à Cloudinary, Neon et OpenAI.
-- Les partitions sont attendues dans Cloudinary avec un nom exploitable par l'API, de type :
-  `Titre - Compositeur - Tonalite.pdf`
-- La route `PUT /api/partitions/:id` est présente mais encore peu exploitée côté interface.
-
-## Auteur
-
-Projet développé autour d'une bibliothèque personnelle de partitions jazz, avec une interface pensée pour la consultation rapide sur desktop et mobile.
+</div>
