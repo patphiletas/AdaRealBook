@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import type { Partition } from "../types/interface";
 
 type Props = {
@@ -68,6 +69,87 @@ export default function EditMetadataDialog({ partition, onUpdated }: Props) {
     }
   }
 
+  const modal = (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-6">
+      <div className="w-full max-w-md rounded-2xl border border-amber-200/50 bg-[linear-gradient(145deg,#fffdf7_0%,#fff6ea_45%,#fbe9d7_100%)] shadow-2xl">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-amber-200/50">
+          <h2 className="text-base font-bold text-amber-950">Modifier les métadonnées</h2>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="rounded-full px-3 py-1 text-xs font-semibold bg-amber-100 text-amber-900 hover:bg-amber-200"
+          >
+            Annuler
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="px-6 py-4 flex flex-col gap-4">
+          <div>
+            <label className={labelClass}>Titre *</label>
+            <input
+              className={inputClass}
+              value={form.title}
+              onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+              placeholder="Titre du morceau"
+            />
+          </div>
+
+          <div>
+            <label className={labelClass}>Compositeur *</label>
+            <input
+              className={inputClass}
+              value={form.composer}
+              onChange={e => setForm(f => ({ ...f, composer: e.target.value }))}
+              placeholder="Nom du compositeur"
+            />
+          </div>
+
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <label className={labelClass}>Tonalité</label>
+              <input
+                className={inputClass}
+                value={form.musical_key}
+                onChange={e => setForm(f => ({ ...f, musical_key: e.target.value }))}
+                placeholder="ex : Bb, F minor"
+              />
+            </div>
+            <div className="flex-1">
+              <label className={labelClass}>Catégorie</label>
+              <input
+                className={inputClass}
+                value={form.category}
+                onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+                placeholder="ex : Realbook"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className={labelClass}>Mot de passe *</label>
+            <input
+              type="password"
+              className={inputClass}
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="Mot de passe"
+            />
+          </div>
+
+          {error && <p className="text-sm text-red-600">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-lg bg-stone-900 py-2.5 text-sm font-semibold text-white hover:bg-stone-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? "Enregistrement…" : "Enregistrer"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+
   return (
     <>
       <button
@@ -78,86 +160,7 @@ export default function EditMetadataDialog({ partition, onUpdated }: Props) {
         Modifier
       </button>
 
-      {open && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-6">
-          <div className="w-full max-w-md rounded-2xl border border-amber-200/50 bg-[linear-gradient(145deg,#fffdf7_0%,#fff6ea_45%,#fbe9d7_100%)] shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-amber-200/50">
-              <h2 className="text-base font-bold text-amber-950">Modifier les métadonnées</h2>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="rounded-full px-3 py-1 text-xs font-semibold bg-amber-100 text-amber-900 hover:bg-amber-200"
-              >
-                Annuler
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="px-6 py-4 flex flex-col gap-4">
-              <div>
-                <label className={labelClass}>Titre *</label>
-                <input
-                  className={inputClass}
-                  value={form.title}
-                  onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                  placeholder="Titre du morceau"
-                />
-              </div>
-
-              <div>
-                <label className={labelClass}>Compositeur *</label>
-                <input
-                  className={inputClass}
-                  value={form.composer}
-                  onChange={e => setForm(f => ({ ...f, composer: e.target.value }))}
-                  placeholder="Nom du compositeur"
-                />
-              </div>
-
-              <div className="flex gap-3">
-                <div className="flex-1">
-                  <label className={labelClass}>Tonalité</label>
-                  <input
-                    className={inputClass}
-                    value={form.musical_key}
-                    onChange={e => setForm(f => ({ ...f, musical_key: e.target.value }))}
-                    placeholder="ex : Bb, F minor"
-                  />
-                </div>
-                <div className="flex-1">
-                  <label className={labelClass}>Catégorie</label>
-                  <input
-                    className={inputClass}
-                    value={form.category}
-                    onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-                    placeholder="ex : Realbook"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className={labelClass}>Mot de passe *</label>
-                <input
-                  type="password"
-                  className={inputClass}
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="Mot de passe"
-                />
-              </div>
-
-              {error && <p className="text-sm text-red-600">{error}</p>}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full rounded-lg bg-stone-900 py-2.5 text-sm font-semibold text-white hover:bg-stone-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? "Enregistrement…" : "Enregistrer"}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+      {open && createPortal(modal, document.body)}
     </>
   );
 }
