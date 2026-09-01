@@ -1,0 +1,143 @@
+.mobileviewer-container {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at top, #201f22 0%, #141418 46%, #0f1013 100%);
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+}
+
+/* Header */
+.mobileviewer-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(20, 20, 24, 0.78);
+  border-bottom: 1px solid rgba(244, 180, 118, 0.35);
+  backdrop-filter: blur(8px);
+  flex-shrink: 0;
+}
+
+.mobileviewer-back {
+  color: #fff8ef;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.5rem;
+  background: rgba(122, 90, 61, 0.42);
+  border: 1px solid rgba(244, 180, 118, 0.38);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.mobileviewer-back:hover {
+  background: rgba(140, 102, 72, 0.56);
+  border-color: rgba(244, 180, 118, 0.64);
+}
+
+.mobileviewer-title {
+  min-width: 0;
+}
+
+.mobileviewer-title-main {
+  color: #fff8ef;
+  font-weight: 600;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobileviewer-title-sub {
+  color: #ffe4cc;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobileviewer-insight-button {
+  margin-top: 0.45rem;
+  background: linear-gradient(120deg, #f2ca9d 0%, #e7ac7c 100%);
+  color: #3d281a;
+  border: none;
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+/* Zoom bar */
+.mobileviewer-zoom {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(20, 20, 24, 0.78);
+  border-bottom: 1px solid rgba(244, 180, 118, 0.25);
+  flex-shrink: 0;
+}
+
+.mobileviewer-button {
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  background: rgba(122, 90, 61, 0.36);
+  border: 1px solid rgba(244, 180, 118, 0.28);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #fff8ef;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.mobileviewer-button:hover {
+  background: rgba(140, 102, 72, 0.46);
+  border-color: rgba(244, 180, 118, 0.5);
+}
+
+.mobileviewer-button-reset {
+  color: #ffe4cc;
+}
+
+.mobileviewer-button-action {
+  background: rgba(242, 202, 157, 0.9);
+  color: #3d281a;
+  border-color: rgba(244, 180, 118, 0.72);
+}
+
+.mobileviewer-button-action:hover {
+  background: rgba(242, 202, 157, 1);
+}
+
+.mobileviewer-scale {
+  color: #ffe4cc;
+  font-size: 0.875rem;
+  width: 3rem;
+  text-align: center;
+}
+
+/* PDF container */
+.mobileviewer-pdf-wrapper {
+  flex: 1;
+  overflow: auto;
+  background: transparent;
+  padding: 0.5rem;
+}
+
+.mobileviewer-pdf-inner {
+  margin: 0 auto;
+}
+
+.mobileviewer-loading {
+  color: #ffe4cc;
+  margin-top: 2.5rem;
+  font-size: 0.875rem;
+}
+
+.mobileviewer-error {
+  color: #f87171;
+  margin-top: 2.5rem;
+  font-size: 0.875rem;
+}
