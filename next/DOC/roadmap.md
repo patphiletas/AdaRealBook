@@ -26,6 +26,7 @@
 | 2026-09-01 | Rédaction de la documentation complète du projet (`README.md`, `AGENTS.md`, dossier `DOC/`), placée dans `next/` pour être commitée avec le projet actif |
 | 2026-09-01 | Correctifs de sécurité, du plus au moins critique (suite à l'audit `DOC/securite.md`) : blocage de l'abus de coût sur `/api/ai/song-insight` (vérification d'existence de la partition avant appel OpenAI), protection de `/api/sync` par mot de passe, comparaison du mot de passe en timing-safe (`lib/auth.ts`), limites de longueur sur les champs édités |
 | 2026-09-01 | Délai artificiel d'1 seconde sur un mot de passe incorrect (`delayFailedAuth`, `lib/auth.ts`) — mitigation légère du bruteforce séquentiel, sans nouvelle infra (pas une vraie protection contre des requêtes parallèles, voir `DOC/securite.md`) |
+| 2026-09-01 | Premiers tests unitaires (Vitest, 21 tests) sur `lib/openai.ts` et `lib/filterPartitions.ts` (extrait de `SearchList.tsx` pour être testable) — a révélé et corrigé un vrai bug de production (`.toLowerCase()` sur un champ `null`, voir `DOC/error.md` #7) |
 
 ## Pistes identifiées pendant la migration (non faites)
 

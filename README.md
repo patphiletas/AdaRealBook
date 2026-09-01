@@ -18,7 +18,7 @@
 
 </div>
 
-*Dernière mise à jour par l'agent : 2026-09-01 21:02*
+*Dernière mise à jour par l'agent : 2026-09-01 21:54*
 
 ---
 
@@ -61,6 +61,7 @@ AdaRealBook est une application web de consultation de partitions jazz, en **Nex
 | Base de données | PostgreSQL via [Neon](https://neon.tech) |
 | Stockage | [Cloudinary](https://cloudinary.com) |
 | IA | OpenAI Responses API |
+| Tests | Vitest (tests unitaires) |
 | Hébergement | [Vercel](https://vercel.com) (front + API dans le même déploiement) |
 
 ---
@@ -128,6 +129,7 @@ EDIT_PASSWORD=your_edit_password
 cd next
 npm run dev      # http://localhost:3000
 npm run build    # avant tout déploiement
+npm test         # tests unitaires (Vitest)
 ```
 
 Un seul serveur, un seul port — plus de front/API séparés à lancer.
@@ -146,11 +148,11 @@ Un seul serveur, un seul port — plus de front/API séparés à lancer.
 **Payload `POST /api/ai/song-insight` :**
 ```json
 {
-  "partitionId": 42,
-  "title": "Autumn Leaves",
-  "composer": "Joseph Kosma"
+  "partitionId": 42
 }
 ```
+
+`title`/`composer` sont lus depuis la base à partir de `partitionId` (la route vérifie que la partition existe avant d'appeler OpenAI).
 
 ---
 
@@ -177,7 +179,7 @@ Toute la documentation détaillée du projet vit dans [`next/`](next/) (le proje
 |---|---|
 | [next/AGENTS.md](next/AGENTS.md) | Instructions pour tout agent IA (Claude ou autre) qui reprend ce projet |
 | [next/DOC/error.md](next/DOC/error.md) | Historique des bugs/blocages rencontrés (dont la migration Vercel) et leur résolution |
-| [next/DOC/test.md](next/DOC/test.md) | État des tests (aucun automatisé à ce jour), checklist manuelle, plan de tests proposé |
+| [next/DOC/test.md](next/DOC/test.md) | État des tests (21 tests unitaires Vitest), checklist manuelle, plan de tests pour la suite |
 | [next/DOC/roadmap.md](next/DOC/roadmap.md) | Historique des évolutions + pistes identifiées |
 | [next/DOC/features.md](next/DOC/features.md) | Analyse faisabilité/difficulté/pertinence des idées d'amélioration UI/UX/technique |
 | [next/DOC/securite.md](next/DOC/securite.md) | Modèle de menace, choix et limites de sécurité |

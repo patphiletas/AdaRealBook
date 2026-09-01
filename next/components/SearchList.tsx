@@ -1,20 +1,8 @@
 import type { SearchListProps } from "@/types/interface";
+import { filterPartitions } from "@/lib/filterPartitions";
 
 export default function SearchList({ partitions, search, onSearchChange, selected, onSelect, fullWidth = false }: SearchListProps) {
-  const resultats = partitions.filter(p => {
-    const saisie = search.trim().toLowerCase();
-    if (!saisie) return true;
-    if (saisie.startsWith("(") && saisie.endsWith(")")) {
-      const ton = saisie.replace(/[()]/g, "");
-      return p.musical_key?.toLowerCase() === ton;
-    }
-    if (saisie.length < 3) return true;
-    return (
-      p.title.toLowerCase().includes(saisie) ||
-      p.composer.toLowerCase().includes(saisie) ||
-      p.category.toLowerCase().includes(saisie)
-    );
-  });
+  const resultats = filterPartitions(partitions, search);
 
   return (
     <div className={`flex flex-col border-r border-amber-100 bg-white/80 backdrop-blur-sm overflow-hidden ${fullWidth ? 'w-full' : 'w-1/3 shrink-0'}`}>

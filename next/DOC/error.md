@@ -74,6 +74,18 @@ Chaque bug/blocage rencontré pendant la migration Express+Vite → Next.js, sa 
 
 ---
 
+## #7 — `TypeError: Cannot read properties of null (reading 'toLowerCase')` en tapant une recherche
+
+- **Date** : 2026-09-01
+- **Symptôme** : découvert en écrivant les tests unitaires de `filterPartitions` et en vérifiant visuellement (Playwright) après extraction de la logique de recherche — taper une recherche de 3 caractères ou plus faisait planter le rendu (`ul li` disparaissait entièrement de la page, plus aucun résultat affiché).
+- **Cause** : `title`/`composer`/`category` sont typés `string` dans `types/interface.ts`, mais la colonne `category` (et parfois `composer`) peut réellement être `null` en base — confirmé en pratique lors d'un test antérieur (`PUT /api/partitions/:id` sans `musical_key`/`category` renvoie bien `"musical_key":null,"category":null`). Le filtre appelait `.toLowerCase()` directement sur ces champs sans vérifier leur présence, contrairement à `musical_key` qui avait déjà `?.` — dès qu'une partition avec un champ `null` entrait dans la liste filtrée, l'appel plantait.
+- **Découverte tardive** : ce bug existait déjà dans l'ancien code inline (`front/src/components/SearchList.tsx` avait exactement la même logique, sans protection) — probablement jamais remarqué car peu de partitions ont des champs `null` et la recherche ne les affichait simplement jamais dans les tests manuels précédents (aucun crash observé ne veut pas dire aucun bug : il suffit de ne jamais taper une recherche qui matche une des partitions concernées).
+- **Résolution** : `p.title?.toLowerCase()`, `p.composer?.toLowerCase()`, `p.category?.toLowerCase()` (chaînage optionnel, comme `musical_key` l'avait déjà) dans `lib/filterPartitions.ts`.
+- **Fichier** : `lib/filterPartitions.ts`.
+- **Leçon générale** : un type TypeScript (`category: string`) n'est qu'une déclaration, pas une garantie — si la colonne DB sous-jacente autorise `NULL`, le type devrait être `string | null`, et tout code qui le manipule doit s'en protéger. Une fonction pure extraite pour être testée (ici `filterPartitions`) a immédiatement révélé un vrai bug de production que les vérifications manuelles précédentes n'avaient jamais fait remonter — argument concret en faveur des tests unitaires au-delà de la seule prévention de régression future.
+
+---
+
 ## Note annexe : accès limité de l'agent pendant le déploiement
 
 Pendant cette migration, l'agent IA n'avait pas d'accès SSH/CLI authentifié pour pousser du code vers GitHub depuis son environnement d'exécution (`Permission denied (publickey)`), et aucun outil MCP disponible ne permettait de modifier les réglages Vercel déjà existants (Root Directory, variables d'environnement, assignation de domaine) sur un projet préexistant — seule leur **lecture** (déploiements, logs de build, variables) était possible. Toutes ces actions ont donc été effectuées par Patrice lui-même, guidé étape par étape par l'agent. Point de méthode à retenir : sur un projet Vercel qui existe déjà (pas un nouveau projet créé par l'agent), s'attendre à devoir déléguer les changements de configuration au propriétaire du compte plutôt qu'à pouvoir les faire directement.

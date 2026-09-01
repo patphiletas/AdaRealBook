@@ -18,6 +18,8 @@ Dette technique identifiée pendant la migration Express+Vite → Next.js — ce
 | 2026-09-01 | Référence de version du worker pdf.js rendue dynamique (`pdfjs.version` au lieu d'une chaîne codée en dur `5.4.296`) dans `lib/pdfWorker.ts` — évite un mismatch entre la version installée de `pdfjs-dist` et celle du worker chargé depuis le CDN unpkg |
 | 2026-09-01 | Correction de l'ordre des règles `@import` dans `app/globals.css` (police Google Fonts déplacée avant `@import "tailwindcss"`) — l'ordre inverse produisait un avertissement de build (CSS invalide une fois Tailwind expansé), corrigé sans changement visuel |
 | 2026-09-01 | Audit sécurité (`DOC/securite.md`) puis correctifs, du plus au moins critique : `POST /api/ai/song-insight` vérifie désormais l'existence de la partition en base avant d'appeler OpenAI (fermait un risque d'abus de coût non borné) ; `GET /api/sync` protégée par le même mot de passe que `PUT /api/partitions/:id` ; comparaison du mot de passe extraite dans `lib/auth.ts` avec `crypto.timingSafeEqual` ; limites de longueur ajoutées sur `title`/`composer`/`musical_key`/`category` |
+| 2026-09-01 | Délai artificiel d'1 seconde sur un mot de passe incorrect (`delayFailedAuth`, `lib/auth.ts`) — mitigation légère du bruteforce séquentiel, sans nouvelle infra (pas une vraie protection contre des requêtes parallèles, voir `DOC/securite.md`) |
+| 2026-09-01 | Mise en place des premiers tests unitaires (Vitest) : `extractResponseText`/`normalizeInsight` exportées depuis `lib/openai.ts` (étaient privées au module) ; logique de filtre de `SearchList.tsx` extraite dans `lib/filterPartitions.ts` (était inline, mélangée au rendu JSX) — 21 tests au total (voir `DOC/test.md`). L'extraction a révélé un vrai bug de production (`.toLowerCase()` sur un champ `null`), corrigé dans la foulée (voir `DOC/error.md` #7) |
 
 ## À faire
 
@@ -49,10 +51,6 @@ const CLOUDINARY_BASE = "https://res.cloudinary.com/dpnudoyxb/image/upload";
 
 Le nom du cloud Cloudinary (`dpnudoyxb`) est une constante en dur plutôt qu'une variable d'environnement — fonctionne, information publique (visible dans n'importe quelle URL de PDF), mais une variable (`NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`) éviterait de la dupliquer si elle doit changer un jour (changement de compte Cloudinary). **Pré-existant, pas introduit par la migration** : `front/src/App.tsx` (racine du dépôt, ligne 14) avait exactement la même constante en dur avant — reprise à l'identique dans `app/page.tsx`, pas une régression.
 
-### Logique de filtre de `SearchList` non extraite
-
-Le filtrage (recherche texte, syntaxe `"(Bb)"` pour la tonalité, seuil de 3 caractères) vit directement dans le corps du composant `components/SearchList.tsx`, mélangé au rendu JSX. L'extraire en fonction pure (ex. `filterPartitions(partitions, search)`) la rendrait testable unitairement (voir `DOC/test.md`) sans dépendre du rendu React.
-
 ### `front/` et `back/` toujours présents dans le dépôt
 
 Dette de transition plutôt que dette de code : les deux dossiers legacy restent dans le dépôt après la migration, en attente d'une suppression formelle une fois `next/` validé en production (voir `DOC/roadmap.md`). Tant qu'ils restent, risque de confusion pour quiconque (humain ou agent) ouvre le dépôt sans contexte — d'où la section "État de transition" en tête d'`AGENTS.md`.
@@ -61,9 +59,9 @@ Dette de transition plutôt que dette de code : les deux dossiers legacy restent
 
 Détail complet dans `DOC/securite.md` — `pdfjs-dist@5.7.284` a une faille haute sévérité connue, corrigée seulement en `6.3.289` (montée majeure). Non corrigé pour l'instant, risque jugé faible dans ce contexte (PDF provenant exclusivement du compte Cloudinary de confiance de Patrice), mais à re-tester (rendu, zoom, fit-to-view) avant de monter la version le jour où ce sera fait.
 
-### Absence de tests, à tout niveau
+### Absence de tests d'intégration et end-to-end
 
-Aucun test unitaire, d'intégration ou end-to-end n'existe (voir `DOC/test.md` pour le plan détaillé) — toute vérification passe par des smoke tests manuels, refaits à chaque changement. Risque de régression silencieuse sur les routes API et l'UI à chaque évolution future.
+Des tests unitaires existent désormais (`lib/openai.ts`, `lib/filterPartitions.ts` — voir `DOC/test.md`), mais les routes API (`app/api/**/route.ts`) et le parcours utilisateur complet ne sont couverts par aucun test automatisé, seulement par des smoke tests manuels. Risque de régression silencieuse sur ces zones à chaque évolution future.
 
 ### Pas de CI
 

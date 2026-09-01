@@ -8,7 +8,7 @@ export interface SongInsightResult {
   anecdotes: string[];
 }
 
-function extractResponseText(responseJson: any): string {
+export function extractResponseText(responseJson: any): string {
   if (typeof responseJson?.output_text === "string" && responseJson.output_text.trim()) {
     return responseJson.output_text;
   }
@@ -25,7 +25,7 @@ function extractResponseText(responseJson: any): string {
   return chunks.join("\n").trim();
 }
 
-function normalizeInsight(data: any): SongInsightResult | null {
+export function normalizeInsight(data: any): SongInsightResult | null {
   const composerWord = typeof data?.composerWord === "string" ? data.composerWord.trim() : "";
   const tonalite = typeof data?.tonalite === "string" ? data.tonalite.trim() : "";
   const grille = typeof data?.grille === "string" ? data.grille.trim() : "";

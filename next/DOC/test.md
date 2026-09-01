@@ -4,7 +4,9 @@
 
 ## État actuel
 
-**Aucun test automatisé n'existe** — ni dans ce dossier `next/` (le projet actif), ni dans les anciens `../front/`/`../back/`. Toute la migration Express+Vite → Next.js a été vérifiée par des smoke tests manuels (`curl` sur les 4 routes API, navigation réelle via Playwright headless) pendant la session de migration, documentés ci-dessous pour mémoire — ils devraient à terme devenir des tests automatiques plutôt que rester des vérifications ponctuelles.
+**21 tests unitaires (Vitest)** couvrent `lib/openai.ts` et `lib/filterPartitions.ts` (voir section 1). Aucun test d'intégration ni end-to-end automatisé n'existe encore — le reste de l'app (routes API, parcours UI complet) est vérifié par des smoke tests manuels (`curl`, navigation réelle via Playwright headless), documentés ci-dessous pour mémoire.
+
+**Commande** : `npm test` (lance `vitest run`, une seule passe, pas de mode watch).
 
 ## Vérifications manuelles déjà effectuées (migration du 2026-09-01)
 
@@ -24,21 +26,20 @@
 
 Ces vérifications n'ont **pas** couvert : la vue mobile (`MobileViewer`) sur un vrai téléphone, l'impression réelle (`window.print()`), le téléchargement de PDF, et le comportement du champ recherche avec la syntaxe `(Bb)` — tout ça reste à vérifier manuellement (voir checklist ci-dessous) ou à automatiser.
 
-## Plan de tests proposé
+## Plan de tests
 
-### 1. Tests unitaires (priorité haute — rien n'existe, gain rapide)
+### 1. Tests unitaires — ✅ fait le 2026-09-01 (Vitest)
 
-Candidats naturels : fonctions pures, faciles à isoler, avec un vrai historique de bug potentiel.
-
-| Fichier à tester | Fonction(s) | Ce qu'il faut couvrir |
+| Fichier testé | Fichier de test | Couverture |
 |---|---|---|
-| `lib/openai.ts` | `normalizeInsight` | Rejette si `composerWord`/`tonalite`/`grille` manquants ou vides ; rejette si `anecdotes` a moins de 3 ou plus de 6 éléments ; tronque à 6 si plus fourni ; filtre les éléments non-string ; trim de chaque champ |
-| `lib/openai.ts` | `extractResponseText` | Format `output_text` direct ; format `output[].content[].text` imbriqué ; renvoie une chaîne vide si aucun texte exploitable |
-| `components/SearchList.tsx` | logique de filtre (actuellement inline, à extraire en fonction pure, ex. `filterPartitions(partitions, search)`) | Recherche vide → tout affiché ; recherche `< 3` caractères → tout affiché (comportement actuel, à documenter comme voulu ou à corriger, voir `DOC/refacto.md`) ; syntaxe `"(Bb)"` → filtre exact sur `musical_key` ; recherche normale → matcher titre/compositeur/catégorie insensible à la casse |
+| `lib/openai.ts` | `lib/openai.test.ts` | `extractResponseText` (format `output_text` direct, format `output[].content[].text` imbriqué, éléments ignorés si pas `output_text`, chaîne vide si rien d'exploitable) ; `normalizeInsight` (accepte un payload valide, trim de tous les champs, rejette si `composerWord`/`tonalite`/`grille` manquant ou vide, rejette si moins de 3 anecdotes, tronque à 6 si plus fourni, filtre les éléments non-string, `null`/`undefined` en entrée) |
+| `lib/filterPartitions.ts` | `lib/filterPartitions.test.ts` | Recherche vide/`< 3` caractères → tout affiché, filtre par titre/compositeur/catégorie insensible à la casse, syntaxe `"(Bb)"` → filtre exact sur `musical_key` (insensible à la casse), aucun résultat → tableau vide, **partitions avec `composer`/`musical_key`/`category` à `null` → ne plante pas** (voir `DOC/error.md` #7, bug réel découvert en écrivant ce test) |
 
-Ces trois cibles n'ont aucune dépendance externe (pas de DB, pas d'API) — testables avec Vitest sans mock, en quelques dizaines de minutes de travail.
+**Refactos nécessaires pour rendre ça possible** (voir `DOC/refacto.md`) : `extractResponseText`/`normalizeInsight` exportées depuis `lib/openai.ts` (étaient des fonctions privées du module) ; logique de filtre de `SearchList.tsx` extraite dans `lib/filterPartitions.ts` (était inline dans le composant).
 
-### 2. Tests d'intégration des routes API (priorité moyenne)
+**Commande** : `npm test` — à lancer avant tout commit qui touche `lib/` ou `components/SearchList.tsx`.
+
+### 2. Tests d'intégration des routes API (priorité moyenne, pas encore fait)
 
 Plus lourds à mettre en place (nécessitent de mocker `postgres`, `cloudinary`, et l'appel `fetch` vers OpenAI), mais couvrent le comportement réellement exposé.
 
