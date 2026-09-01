@@ -8,6 +8,7 @@ import "@/styles/MobileViewer.css";
 
 import type { MobileViewerProps } from "@/types/interface";
 import EditMetadataDialog from "./EditMetadataDialog";
+import { downloadFile } from "@/lib/downloadFile";
 
 export default function MobileViewer({
   partition,
@@ -27,14 +28,7 @@ export default function MobileViewer({
 
   const pageWidth = pdfWidth * scale;
   const handleDownload = () => {
-    const link = document.createElement("a");
-    link.href = pdfUrl;
-    link.download = `${partition.title}.pdf`;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+    downloadFile(pdfUrl, `${partition.title}.pdf`);
   };
 
   const handlePrint = () => {

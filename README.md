@@ -18,7 +18,7 @@
 
 </div>
 
-*Dernière mise à jour par l'agent : 2026-09-01 21:54*
+*Dernière mise à jour par l'agent : 2026-09-01 22:13*
 
 ---
 
@@ -32,7 +32,7 @@
 
 AdaRealBook est une application web de consultation de partitions jazz, en **Next.js** (App Router) : UI de lecture des PDF et API (Route Handlers) dans un seul projet, une base PostgreSQL sur Neon, un stockage Cloudinary, et une fiche IA générée à la demande pour chaque morceau.
 
-> **Le projet vit dans [`next/`](next/).** Les dossiers `front/` et `back/` à la racine sont l'ancienne architecture (front Vite séparé + backend Express sur Render), conservés temporairement pendant la validation de la migration — voir [`next/DOC/roadmap.md`](next/DOC/roadmap.md) pour l'historique et la suite prévue (suppression de ces deux dossiers).
+> **Le projet vit dans [`next/`](next/).** Il remplace une ancienne architecture (front Vite séparé + backend Express sur Render) migrée puis supprimée du dépôt le 2026-09-01 — voir [`next/DOC/roadmap.md`](next/DOC/roadmap.md) pour l'historique.
 
 ---
 
@@ -70,16 +70,15 @@ AdaRealBook est une application web de consultation de partitions jazz, en **Nex
 
 ```
 AdaRealBook/
-├── next/                 # Le projet actif — voir next/README.md pour le détail
+├── .github/workflows/    # CI (build + tests sur chaque push/PR)
+├── next/                 # Le projet — voir next/README.md pour le détail
 │   ├── app/
 │   │   ├── page.tsx          # UI principale (Client Component)
 │   │   └── api/               # Route Handlers : partitions, ai/song-insight, sync
 │   ├── components/           # SearchList, PdfViewer, MobileViewer, EditMetadataDialog
-│   ├── lib/                   # db.ts, cloudinary.ts, openai.ts, pdfWorker.ts
+│   ├── lib/                   # db.ts, cloudinary.ts, openai.ts, pdfWorker.ts, auth.ts
 │   ├── DOC/                    # Documentation détaillée (voir plus bas)
 │   └── AGENTS.md                # Instructions pour tout agent IA qui reprend ce code
-├── front/                # Legacy — ancien front React + Vite, en attente de suppression
-├── back/                 # Legacy — ancien backend Express (Render), en attente de suppression
 └── assets/               # Images du README
 ```
 
@@ -160,12 +159,12 @@ Un seul serveur, un seul port — plus de front/API séparés à lancer.
 
 - [x] Édition des métadonnées depuis l'interface
 - [x] Migration vers un Next.js unique (front + API), coupure du backend Express/Render
+- [x] Suppression de `front/` et `back/`, CI (build + tests sur chaque push)
 - [ ] Filtres avancés en UI (tonalité, catégorie) — voir [`next/DOC/features.md`](next/DOC/features.md) #1
 - [ ] Favoris / dernières partitions consultées — voir [`next/DOC/features.md`](next/DOC/features.md) #2
 - [ ] Gestion multi-volumes
 - [ ] Favoris, playlists et sets
 - [ ] Authentification
-- [ ] Suppression de `front/` et `back/` une fois `next/` définitivement validé
 
 Analyse détaillée (difficulté, pertinence, avis) de ces pistes et d'autres dans [`next/DOC/features.md`](next/DOC/features.md).
 

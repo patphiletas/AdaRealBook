@@ -1,6 +1,6 @@
 # Tests
 
-*Dernière mise à jour par l'agent : 2026-09-01 21:02*
+*Dernière mise à jour par l'agent : 2026-09-01 22:45*
 
 ## État actuel
 
@@ -66,7 +66,7 @@ Outil déjà utilisé avec succès pendant la migration : **Playwright**.
 - [ ] Édition de métadonnées : les 4 champs (titre, compositeur, tonalité, catégorie) se pré-remplissent avec les valeurs actuelles à l'ouverture du dialogue.
 - [ ] Édition de métadonnées : après succès, la liste de gauche reflète immédiatement le nouveau titre/compositeur sans rechargement de page.
 - [ ] Fiche IA : le bouton "Réessayer" apparaît bien en cas d'erreur et relance `handleGenerateInsight`.
-- [ ] Téléchargement PDF : le nom de fichier proposé correspond au titre de la partition (vue mobile) ou à `"partition.pdf"` (vue desktop, voir `DOC/refacto.md` pour l'incohérence).
+- [x] Téléchargement PDF : le nom de fichier proposé correspond au titre réel de la partition, desktop et mobile — vérifié le 2026-09-01 via Playwright (`page.waitForEvent("download")` + `suggestedFilename()`), voir `DOC/error.md` #8. À revérifier si `lib/downloadFile.ts` est modifié : un simple changement de prop ne suffit pas à le confirmer, il faut observer l'événement de téléchargement réel.
 - [ ] `GET /api/sync` : lancé deux fois de suite sur les mêmes fichiers Cloudinary, ne crée pas de doublon (upsert `ON CONFLICT` sur `name_pdf`).
 
 ## Pourquoi il n'y a pas encore de tests automatisés

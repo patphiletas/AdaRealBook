@@ -264,6 +264,7 @@ export default function Home() {
             />
             <PdfViewer
               pdfUrl={pdfUrl}
+              partitionTitle={selected?.title}
               numPages={numPages}
               scale={scale}
               pdfWidth={pdfWidth}

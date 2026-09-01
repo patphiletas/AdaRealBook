@@ -1,6 +1,6 @@
 # Roadmap
 
-*Dernière mise à jour par l'agent : 2026-09-01 21:02*
+*Dernière mise à jour par l'agent : 2026-09-01 22:13*
 
 **Règle d'entretien : ajouter une ligne dans "Historique" à chaque évolution livrée, et déplacer une idée de "Pistes identifiées" vers "Historique" (ou la retirer si abandonnée) dès qu'elle est faite.**
 
@@ -27,6 +27,7 @@
 | 2026-09-01 | Correctifs de sécurité, du plus au moins critique (suite à l'audit `DOC/securite.md`) : blocage de l'abus de coût sur `/api/ai/song-insight` (vérification d'existence de la partition avant appel OpenAI), protection de `/api/sync` par mot de passe, comparaison du mot de passe en timing-safe (`lib/auth.ts`), limites de longueur sur les champs édités |
 | 2026-09-01 | Délai artificiel d'1 seconde sur un mot de passe incorrect (`delayFailedAuth`, `lib/auth.ts`) — mitigation légère du bruteforce séquentiel, sans nouvelle infra (pas une vraie protection contre des requêtes parallèles, voir `DOC/securite.md`) |
 | 2026-09-01 | Premiers tests unitaires (Vitest, 21 tests) sur `lib/openai.ts` et `lib/filterPartitions.ts` (extrait de `SearchList.tsx` pour être testable) — a révélé et corrigé un vrai bug de production (`.toLowerCase()` sur un champ `null`, voir `DOC/error.md` #7) |
+| 2026-09-01 | Refacto de suivi : nom de fichier de téléchargement uniformisé (desktop/mobile), CI GitHub Actions ajoutée (build + tests sur chaque push/PR), et **suppression définitive de `front/`, `back/` et du `vercel.json` racine** — `next/` est désormais l'unique contenu du dépôt |
 
 ## Pistes identifiées pendant la migration (non faites)
 
@@ -43,6 +44,6 @@ Notées au fil de l'eau, à confirmer avant de les faire — détail et avis dan
 
 - **Root Directory Vercel** : `next` (pas la racine du dépôt) — nécessaire pour que Vercel construise le bon projet dans ce monorepo de fait.
 - **Sync manuelle plutôt que cron** : décision explicite de Patrice, pour rester sur le plan Vercel Hobby (cron limité à une exécution/jour) sans complexifier.
-- **`front/`/`back/` conservés en parallèle** le temps de valider `next/`, à supprimer dans un second temps (non fait à ce jour — voir "État de transition" dans `AGENTS.md`, à retirer de ce document une fois la suppression faite).
+- **`front/`/`back/` conservés en parallèle** le temps de valider `next/`, supprimés le 2026-09-01 une fois la migration jugée stable en production (voir historique ci-dessus).
 - **URL de production inchangée** : bascule faite sur le même projet Vercel (`real-book`) et le même domaine que l'ancien front, pas de nouveau projet ni de changement d'URL pour les liens déjà partagés (CV).
 - **Domaine `real-book-patphiletas.vercel.app` (sans "-projects") laissé de côté** : resté figé sur un très vieux déploiement malgré plusieurs tentatives de correction (Refresh, edit d'assignation, remove+re-add) — non prioritaire une fois confirmé que ce n'est pas l'URL réellement utilisée (`real-book-patphiletas-projects.vercel.app`, avec "-projects", est la bonne). Détail dans `DOC/error.md` #4.

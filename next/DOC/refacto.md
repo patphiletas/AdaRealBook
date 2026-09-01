@@ -1,6 +1,6 @@
 # Refactoring
 
-*Dernière mise à jour par l'agent : 2026-09-01 21:02*
+*Dernière mise à jour par l'agent : 2026-09-01 22:45*
 
 Dette technique identifiée pendant la migration Express+Vite → Next.js — ce qui a déjà été nettoyé au passage, et ce qui reste en suspens.
 
@@ -20,6 +20,9 @@ Dette technique identifiée pendant la migration Express+Vite → Next.js — ce
 | 2026-09-01 | Audit sécurité (`DOC/securite.md`) puis correctifs, du plus au moins critique : `POST /api/ai/song-insight` vérifie désormais l'existence de la partition en base avant d'appeler OpenAI (fermait un risque d'abus de coût non borné) ; `GET /api/sync` protégée par le même mot de passe que `PUT /api/partitions/:id` ; comparaison du mot de passe extraite dans `lib/auth.ts` avec `crypto.timingSafeEqual` ; limites de longueur ajoutées sur `title`/`composer`/`musical_key`/`category` |
 | 2026-09-01 | Délai artificiel d'1 seconde sur un mot de passe incorrect (`delayFailedAuth`, `lib/auth.ts`) — mitigation légère du bruteforce séquentiel, sans nouvelle infra (pas une vraie protection contre des requêtes parallèles, voir `DOC/securite.md`) |
 | 2026-09-01 | Mise en place des premiers tests unitaires (Vitest) : `extractResponseText`/`normalizeInsight` exportées depuis `lib/openai.ts` (étaient privées au module) ; logique de filtre de `SearchList.tsx` extraite dans `lib/filterPartitions.ts` (était inline, mélangée au rendu JSX) — 21 tests au total (voir `DOC/test.md`). L'extraction a révélé un vrai bug de production (`.toLowerCase()` sur un champ `null`), corrigé dans la foulée (voir `DOC/error.md` #7) |
+| 2026-09-01 | Nom de fichier de téléchargement réellement corrigé sur desktop et mobile (`lib/downloadFile.ts` : fetch + blob avant de déclencher le `<a download>`) — la première tentative (juste passer `partitionTitle` en prop à `PdfViewer`) ne changeait rien en pratique : l'attribut `download` n'est pas honoré par les navigateurs pour une URL cross-origin (Cloudinary), qui dérivent toujours le nom du fichier depuis l'URL. Repéré en vérifiant visuellement plutôt qu'en faisant confiance au diff — voir `DOC/error.md` #8 |
+| 2026-09-01 | CI ajoutée (`.github/workflows/ci.yml`, à la racine du dépôt) : `npm ci && npm run build && npm test` sur chaque push/PR vers `main`, aucun secret nécessaire |
+| 2026-09-01 | Suppression de `front/` (ancien front Vite) et `back/` (ancien backend Express/Render) du dépôt, ainsi que du `vercel.json` racine (rewrite SPA de l'ancien front, sans effet depuis que le Root Directory Vercel est `next`) — migration jugée stable en production, historique conservé dans `DOC/roadmap.md` et l'historique git |
 
 ## À faire
 
@@ -39,21 +42,13 @@ Chaque route valide toujours ses entrées à la main (`typeof title !== "string"
 
 Fonctionne pour un usage strictement personnel, mais architecturalement fragile (voir `DOC/securite.md` pour l'analyse complète) — pas de notion d'utilisateur, pas de log d'édition, pas de rate limiting (même après le durcissement du 2026-09-01, qui a corrigé la comparaison en timing-safe et étendu la protection à `/api/sync`, mais pas ajouté de limite de tentatives). Un vrai mécanisme d'auth (type NextAuth) serait plus correct si l'app gagne plusieurs contributeurs un jour ; pas une priorité tant que Patrice reste le seul éditeur.
 
-### Nom de fichier de téléchargement incohérent entre desktop et mobile
-
-`PdfViewer.tsx` (desktop) propose toujours `"partition.pdf"` comme nom de fichier au téléchargement, alors que `MobileViewer.tsx` (mobile) utilise `` `${partition.title}.pdf` ``. Résidu de la reprise à l'identique de l'ancien code (`front/src/components/PdfViewer.tsx` et `MobileViewer.tsx` avaient déjà cette différence) — à uniformiser sur le nom réel de la partition dans les deux cas.
-
 ### `CLOUDINARY_BASE` codé en dur dans `app/page.tsx`
 
 ```ts
 const CLOUDINARY_BASE = "https://res.cloudinary.com/dpnudoyxb/image/upload";
 ```
 
-Le nom du cloud Cloudinary (`dpnudoyxb`) est une constante en dur plutôt qu'une variable d'environnement — fonctionne, information publique (visible dans n'importe quelle URL de PDF), mais une variable (`NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`) éviterait de la dupliquer si elle doit changer un jour (changement de compte Cloudinary). **Pré-existant, pas introduit par la migration** : `front/src/App.tsx` (racine du dépôt, ligne 14) avait exactement la même constante en dur avant — reprise à l'identique dans `app/page.tsx`, pas une régression.
-
-### `front/` et `back/` toujours présents dans le dépôt
-
-Dette de transition plutôt que dette de code : les deux dossiers legacy restent dans le dépôt après la migration, en attente d'une suppression formelle une fois `next/` validé en production (voir `DOC/roadmap.md`). Tant qu'ils restent, risque de confusion pour quiconque (humain ou agent) ouvre le dépôt sans contexte — d'où la section "État de transition" en tête d'`AGENTS.md`.
+Le nom du cloud Cloudinary (`dpnudoyxb`) est une constante en dur plutôt qu'une variable d'environnement — fonctionne, information publique (visible dans n'importe quelle URL de PDF), mais une variable (`NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`) éviterait de la dupliquer si elle doit changer un jour (changement de compte Cloudinary). Préexistant à la migration (même constante dans l'ancien front, avant sa suppression du dépôt).
 
 ### Dépendance avec vulnérabilité connue (`pdfjs-dist`)
 
@@ -62,7 +57,3 @@ Détail complet dans `DOC/securite.md` — `pdfjs-dist@5.7.284` a une faille hau
 ### Absence de tests d'intégration et end-to-end
 
 Des tests unitaires existent désormais (`lib/openai.ts`, `lib/filterPartitions.ts` — voir `DOC/test.md`), mais les routes API (`app/api/**/route.ts`) et le parcours utilisateur complet ne sont couverts par aucun test automatisé, seulement par des smoke tests manuels. Risque de régression silencieuse sur ces zones à chaque évolution future.
-
-### Pas de CI
-
-Aucun pipeline (GitHub Actions ou autre) ne lance `npm run build` automatiquement sur push/PR — toute vérification de build est faite manuellement, en local, avant de pousser. Un simple workflow "build on push" sécuriserait au moins contre un déploiement cassé, sans même attendre l'ajout de vrais tests.

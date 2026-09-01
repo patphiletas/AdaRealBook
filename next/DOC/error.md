@@ -1,6 +1,6 @@
 # Journal des bugs
 
-*Dernière mise à jour par l'agent : 2026-09-01 21:02*
+*Dernière mise à jour par l'agent : 2026-09-01 22:45*
 
 Chaque bug/blocage rencontré pendant la migration Express+Vite → Next.js, sa cause réelle, et comment il a été résolu. But : ne pas retomber deux fois dans le même piège.
 
@@ -83,6 +83,17 @@ Chaque bug/blocage rencontré pendant la migration Express+Vite → Next.js, sa 
 - **Résolution** : `p.title?.toLowerCase()`, `p.composer?.toLowerCase()`, `p.category?.toLowerCase()` (chaînage optionnel, comme `musical_key` l'avait déjà) dans `lib/filterPartitions.ts`.
 - **Fichier** : `lib/filterPartitions.ts`.
 - **Leçon générale** : un type TypeScript (`category: string`) n'est qu'une déclaration, pas une garantie — si la colonne DB sous-jacente autorise `NULL`, le type devrait être `string | null`, et tout code qui le manipule doit s'en protéger. Une fonction pure extraite pour être testée (ici `filterPartitions`) a immédiatement révélé un vrai bug de production que les vérifications manuelles précédentes n'avaient jamais fait remonter — argument concret en faveur des tests unitaires au-delà de la seule prévention de régression future.
+
+---
+
+## #8 — Le nom de fichier au téléchargement ne changeait pas malgré la correction du code
+
+- **Date** : 2026-09-01
+- **Symptôme** : après avoir corrigé l'incohérence relevée dans `DOC/refacto.md` (passer le titre réel de la partition à `PdfViewer` via un nouveau prop `partitionTitle`, utilisé dans `link.download`), une vérification Playwright réelle (`page.waitForEvent("download")` + `download.suggestedFilename()`) montrait toujours l'ancien nom (`128_qf1hqp.pdf`, l'identifiant interne Cloudinary) au lieu du titre attendu.
+- **Cause** : l'attribut HTML `download` d'un `<a>` n'est **honoré par les navigateurs que pour une URL de même origine**. Le PDF est servi depuis `res.cloudinary.com`, un domaine différent de l'app — pour une ressource cross-origin, Chromium (et la plupart des navigateurs) ignore silencieusement la valeur de `download` et dérive le nom de fichier de l'URL elle-même. Ni la présence ni l'absence de `target="_blank"` ne changeait ce comportement (testé explicitement pour écarter cette piste) ; Cloudinary ne renvoie pas non plus de `Content-Disposition` qui aurait pu l'expliquer autrement.
+- **Résolution** : `lib/downloadFile.ts` récupère le PDF via `fetch()` (Cloudinary renvoie `Access-Control-Allow-Origin: *`, donc pas de blocage CORS), construit une URL `blob:` locale (**same-origin** par nature) à partir du résultat, puis déclenche le téléchargement sur cette URL — l'attribut `download` est alors honoré normalement. Repli sur `window.open` si le `fetch` échoue (ex: hors ligne).
+- **Fichiers** : `lib/downloadFile.ts` (nouveau), `components/PdfViewer.tsx`, `components/MobileViewer.tsx`.
+- **Leçon générale** : un changement de code qui "a l'air correct" et qui **build sans erreur** n'est pas la même chose qu'un changement **vérifié en conditions réelles** — ici, seul un test qui observe le comportement navigateur réel (l'événement `download` et son nom de fichier suggéré, pas juste l'absence d'erreur) a permis de détecter que le premier correctif ne changeait rien en pratique. À reproduire : pour tout comportement de téléchargement/nom de fichier, vérifier avec un outil qui capture l'événement réel plutôt que de se fier à la lecture du code seule.
 
 ---
 

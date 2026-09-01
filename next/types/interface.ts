@@ -25,6 +25,7 @@ export interface SearchListProps {
 
 export interface PdfViewerProps {
   pdfUrl: string | null;
+  partitionTitle?: string;
   numPages: number;
   scale: number;
   pdfWidth?: number;

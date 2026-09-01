@@ -7,9 +7,11 @@ import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import "@/styles/PdfViewer.css";
 import type { PdfViewerProps } from "@/types/interface";
+import { downloadFile } from "@/lib/downloadFile";
 
 export default function PdfViewer({
   pdfUrl,
+  partitionTitle,
   numPages,
   scale,
   onLoadSuccess,
@@ -50,14 +52,7 @@ export default function PdfViewer({
 
   const handleDownload = () => {
     if (!pdfUrl) return;
-    const link = document.createElement("a");
-    link.href = pdfUrl;
-    link.download = "partition.pdf";
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+    downloadFile(pdfUrl, `${partitionTitle || "partition"}.pdf`);
   };
 
   const handlePrint = () => {
