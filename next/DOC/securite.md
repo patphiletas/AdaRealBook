@@ -53,7 +53,8 @@ Les 4 corrections tiennent dans les fichiers existants, sans nouvelle dépendanc
 
 ## Ce qui n'est pas fait / limites connues
 
-- **Pas de rate limiting générique** (par IP ou autre) sur aucune route — nécessiterait un état partagé entre invocations serverless (Upstash Redis ou équivalent), pas ajouté faute de besoin confirmé. L'abus de coût le plus concret (`/api/ai/song-insight` avec des `partitionId` inventés) est déjà fermé par la vérification d'existence (voir correctifs ci-dessus) ; ce qui reste ouvert est plus mineur (bruteforce du mot de passe, appels répétés sur des partitions déjà en cache donc déjà peu coûteux).
+- **Pas de vrai rate limiting** (par IP ou autre) sur aucune route — nécessiterait un état partagé entre invocations serverless (Upstash Redis ou équivalent) ou le rate limiting natif de Vercel (plans Pro+, pas disponible sur Hobby), pas ajouté faute de besoin confirmé. L'abus de coût le plus concret (`/api/ai/song-insight` avec des `partitionId` inventés) est déjà fermé par la vérification d'existence (voir correctifs ci-dessus).
+  - **Mitigation légère ajoutée le 2026-09-01** : `delayFailedAuth()` (`lib/auth.ts`) attend 1 seconde avant de répondre 403 sur un mot de passe incorrect (`PUT /api/partitions/:id`, `GET /api/sync`) — ralentit un bruteforce séquentiel (~1 essai/seconde max), mais **n'empêche pas des requêtes envoyées en parallèle** (plusieurs invocations serverless simultanées contournent ce délai, qui n'a d'effet que sur une même chaîne de requêtes séquentielles). Ce n'est pas une vraie protection contre le bruteforce, juste une gêne pour un script naïf à un coût d'implémentation nul (pas de nouvelle infra).
 - **Pas de protection CSRF explicite** sur `PUT /api/partitions/:id` / `GET /api/sync` au-delà de la nécessité de connaître `EDIT_PASSWORD` — acceptable vu le mot de passe requis, mais ce n'est pas un vrai jeton anti-CSRF.
 - **Pas de rotation planifiée des secrets** (`EDIT_PASSWORD`, clés API).
 

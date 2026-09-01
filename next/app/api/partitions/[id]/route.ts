@@ -1,5 +1,5 @@
 import { sql } from "@/lib/db";
-import { checkEditPassword } from "@/lib/auth";
+import { checkEditPassword, delayFailedAuth } from "@/lib/auth";
 
 const MAX_TITLE_COMPOSER_LENGTH = 200;
 const MAX_CATEGORY_LENGTH = 100;
@@ -10,6 +10,7 @@ export async function PUT(request: Request, ctx: RouteContext<"/api/partitions/[
   const { password, title, composer, musical_key, category } = await request.json();
 
   if (!checkEditPassword(password)) {
+    await delayFailedAuth();
     return Response.json({ error: "Mot de passe incorrect" }, { status: 403 });
   }
 
