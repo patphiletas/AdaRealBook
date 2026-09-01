@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # AGENTS.md — AdaRealBook
 
-*Dernière mise à jour par l'agent : 2026-09-01 22:13*
+*Dernière mise à jour par l'agent : 2026-09-01 23:04*
 
 Instructions pour tout agent IA (Claude Code ou autre) qui travaille sur ce projet. Cette documentation est le principal moyen de garder trace de ce qui a été fait, pourquoi, et où en est le projet — à traiter comme une exigence du projet, pas comme un à-côté optionnel.
 
@@ -47,14 +47,15 @@ Ce dossier `next/` est **le seul projet du dépôt** `AdaRealBook` depuis le 202
 
 Si un changement touche plusieurs catégories à la fois, mettre à jour tous les fichiers concernés.
 
-**Marqueur de fraîcheur** : `../README.md`, ce fichier et chaque fichier `DOC/*.md` portent une ligne `*Dernière mise à jour par l'agent : 2026-09-01 22:13*` sous leur titre — à avancer soi-même dès qu'on modifie le fichier (`date "+%Y-%m-%d %H:%M"`).
+**Marqueur de fraîcheur** : `../README.md`, ce fichier et chaque fichier `DOC/*.md` portent une ligne `*Dernière mise à jour par l'agent : 2026-09-01 23:04*` sous leur titre — à avancer soi-même dès qu'on modifie le fichier (`date "+%Y-%m-%d %H:%M"`).
 
 ## Conventions du projet
 
 - **TypeScript**, App Router, composants clients (`"use client"`) uniquement là où c'est nécessaire (état, hooks, `window`/`document`). `app/layout.tsx` reste un composant serveur.
 - **Tailwind CSS v4** (`@import "tailwindcss"` dans `app/globals.css`, plugin `@tailwindcss/postcss`) — pas de CSS-in-JS, pas de librairie de composants UI. Les deux fichiers `styles/PdfViewer.css` et `styles/MobileViewer.css` restent en CSS classique (repris tels quels de l'ancien front) — cohérence à garder pour toute nouvelle UI côté visionneuse PDF.
 - **`react-pdf` / `pdfjs-dist` ne doivent jamais être importés au niveau module d'un composant serveur ou d'`app/page.tsx` directement** — ils référencent des API navigateur (`DOMMatrix`, Canvas) qui font planter le build si le module est évalué côté serveur. Toujours passer par `next/dynamic(..., { ssr: false })` (voir `components/PdfViewer.tsx`, `components/MobileViewer.tsx`, et `lib/pdfWorker.ts` pour l'initialisation du worker). Détail complet dans `DOC/error.md` #1.
-- **Route Handlers** (`app/api/**/route.ts`) : chaque route reprend la logique métier de l'ancien `back/index.js`, transcrite à l'identique (voir `lib/db.ts`, `lib/cloudinary.ts`, `lib/openai.ts`). Toute nouvelle route doit suivre le même patron `try/catch` + `Response.json({ error }, { status })` — voir `DOC/refacto.md` pour l'idée d'un wrapper générique.
+- **Route Handlers** (`app/api/**/route.ts`) : logique métier dans `lib/db.ts`, `lib/cloudinary.ts`, `lib/openai.ts`. Toute nouvelle route doit être enveloppée dans `withErrorHandling` (`lib/withErrorHandling.ts`) plutôt que de répéter un `try/catch` manuel — voir les 4 routes existantes pour le patron (`export const GET = withErrorHandling(async (...) => {...}, "message d'erreur optionnel")`).
+- **Validation des entrées** : passer par `lib/validation.ts` (`validatePartitionInput`, `isValidPartitionId`) plutôt que d'écrire de nouvelles vérifications manuelles inline dans une route.
 - **Requêtes SQL** : toujours via les template strings taguées de `postgres` (`sql\`...\``), jamais de concaténation de chaîne — c'est ce qui protège contre l'injection SQL (voir `DOC/securite.md`).
 - **Variables d'environnement** : toutes server-only (pas de préfixe `NEXT_PUBLIC_`), utilisées uniquement dans `lib/` et les route handlers — jamais exposées au client. Cohérent entre `.env.local` (dev) et Vercel (prod/preview), mais **les deux sont indépendants** : ajouter une variable dans l'un ne l'ajoute pas à l'autre.
 

@@ -1,6 +1,6 @@
 # Refactoring
 
-*Dernière mise à jour par l'agent : 2026-09-01 22:45*
+*Dernière mise à jour par l'agent : 2026-09-01 23:04*
 
 Dette technique identifiée pendant la migration Express+Vite → Next.js — ce qui a déjà été nettoyé au passage, et ce qui reste en suspens.
 
@@ -23,20 +23,10 @@ Dette technique identifiée pendant la migration Express+Vite → Next.js — ce
 | 2026-09-01 | Nom de fichier de téléchargement réellement corrigé sur desktop et mobile (`lib/downloadFile.ts` : fetch + blob avant de déclencher le `<a download>`) — la première tentative (juste passer `partitionTitle` en prop à `PdfViewer`) ne changeait rien en pratique : l'attribut `download` n'est pas honoré par les navigateurs pour une URL cross-origin (Cloudinary), qui dérivent toujours le nom du fichier depuis l'URL. Repéré en vérifiant visuellement plutôt qu'en faisant confiance au diff — voir `DOC/error.md` #8 |
 | 2026-09-01 | CI ajoutée (`.github/workflows/ci.yml`, à la racine du dépôt) : `npm ci && npm run build && npm test` sur chaque push/PR vers `main`, aucun secret nécessaire |
 | 2026-09-01 | Suppression de `front/` (ancien front Vite) et `back/` (ancien backend Express/Render) du dépôt, ainsi que du `vercel.json` racine (rewrite SPA de l'ancien front, sans effet depuis que le Root Directory Vercel est `next`) — migration jugée stable en production, historique conservé dans `DOC/roadmap.md` et l'historique git |
+| 2026-09-01 | Wrapper générique `withErrorHandling` (`lib/withErrorHandling.ts`) appliqué aux 4 routes — remplace le pattern `try/catch` répété par un export `withErrorHandling(handler, message?)`. A permis de corriger dans la foulée `GET /api/sync` : `syncPartitions()` (`lib/cloudinary.ts`) relance désormais l'erreur au lieu de l'avaler après l'avoir loguée, donc un échec réel de synchro renvoie enfin un statut 500 exploitable au lieu d'un 200 trompeur |
+| 2026-09-01 | Validation centralisée (`lib/validation.ts`, `validatePartitionInput`/`isValidPartitionId`) — remplace les vérifications manuelles dupliquées entre `PUT /api/partitions/[id]` et `POST /api/ai/song-insight` par des fonctions pures, testées unitairement (12 tests, voir `DOC/test.md`) |
 
 ## À faire
-
-### Pattern try/catch répété dans chaque route
-
-Chaque route (`app/api/partitions/route.ts`, `app/api/partitions/[id]/route.ts`, `app/api/ai/song-insight/route.ts`) répète la même structure : `try { ... } catch { return Response.json({ error }, { status: 500 }) }`. Fonctionne bien à 4 routes, mais un petit wrapper générique (`withErrorHandling(handler)`) éviterait la répétition si le nombre de routes grossit.
-
-### `GET /api/sync` avale ses erreurs sans les remonter
-
-`syncPartitions()` (`lib/cloudinary.ts`) attrape ses propres erreurs et se contente de les loguer (`console.error`) — la route `GET /api/sync` renvoie donc toujours `{ message: "Synchro lancée..." }` avec un statut 200, même en cas d'échec réel de la synchro. Comportement hérité tel quel de l'ancien `back/index.js`. À décider : est-ce voulu (l'appelant n'a de toute façon aucune action à prendre en cas d'échec, seuls les logs serveur comptent), ou faut-il remonter un statut d'erreur exploitable ?
-
-### Aucune validation de schéma partagée
-
-Chaque route valide toujours ses entrées à la main (`typeof title !== "string"`, `!title.trim()`, etc.), dupliqué entre `app/api/partitions/[id]/route.ts` et `app/api/ai/song-insight/route.ts` — seule la vérification du mot de passe a été extraite dans `lib/auth.ts` (2026-09-01). Une petite librairie de validation (type Zod, ou des fonctions maison façon `lib/validation.ts`) centraliserait le reste des règles (présence, longueur) et donnerait des messages d'erreur cohérents.
 
 ### `EDIT_PASSWORD` : mot de passe unique partagé
 

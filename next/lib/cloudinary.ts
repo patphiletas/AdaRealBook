@@ -49,5 +49,6 @@ export async function syncPartitions() {
     console.log("✅ Synchronisation terminée !");
   } catch (error) {
     console.error("❌ Erreur synchro :", error);
+    throw error;
   }
 }

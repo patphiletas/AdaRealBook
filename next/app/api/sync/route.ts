@@ -1,7 +1,8 @@
 import { syncPartitions } from "@/lib/cloudinary";
 import { checkEditPassword, delayFailedAuth } from "@/lib/auth";
+import { withErrorHandling } from "@/lib/withErrorHandling";
 
-export async function GET(request: Request) {
+export const GET = withErrorHandling(async (request: Request) => {
   const { searchParams } = new URL(request.url);
 
   if (!checkEditPassword(searchParams.get("password"))) {
@@ -11,4 +12,4 @@ export async function GET(request: Request) {
 
   await syncPartitions();
   return Response.json({ message: "Synchro lancée, vérifie les logs !" });
-}
+}, "Erreur lors de la synchronisation Cloudinary");

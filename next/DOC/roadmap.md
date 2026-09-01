@@ -1,6 +1,6 @@
 # Roadmap
 
-*Dernière mise à jour par l'agent : 2026-09-01 22:13*
+*Dernière mise à jour par l'agent : 2026-09-01 23:04*
 
 **Règle d'entretien : ajouter une ligne dans "Historique" à chaque évolution livrée, et déplacer une idée de "Pistes identifiées" vers "Historique" (ou la retirer si abandonnée) dès qu'elle est faite.**
 
@@ -28,6 +28,7 @@
 | 2026-09-01 | Délai artificiel d'1 seconde sur un mot de passe incorrect (`delayFailedAuth`, `lib/auth.ts`) — mitigation légère du bruteforce séquentiel, sans nouvelle infra (pas une vraie protection contre des requêtes parallèles, voir `DOC/securite.md`) |
 | 2026-09-01 | Premiers tests unitaires (Vitest, 21 tests) sur `lib/openai.ts` et `lib/filterPartitions.ts` (extrait de `SearchList.tsx` pour être testable) — a révélé et corrigé un vrai bug de production (`.toLowerCase()` sur un champ `null`, voir `DOC/error.md` #7) |
 | 2026-09-01 | Refacto de suivi : nom de fichier de téléchargement uniformisé (desktop/mobile), CI GitHub Actions ajoutée (build + tests sur chaque push/PR), et **suppression définitive de `front/`, `back/` et du `vercel.json` racine** — `next/` est désormais l'unique contenu du dépôt |
+| 2026-09-01 | Refacto de suivi (suite) : wrapper `withErrorHandling` appliqué aux 4 routes (fin du pattern try/catch répété) — a permis de corriger `GET /api/sync` qui renvoyait toujours 200 même en cas d'échec réel ; validation centralisée (`lib/validation.ts`) remplaçant les vérifications dupliquées entre les routes — 33 tests unitaires au total |
 
 ## Pistes identifiées pendant la migration (non faites)
 

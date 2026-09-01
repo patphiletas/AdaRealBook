@@ -1,10 +1,10 @@
 # Tests
 
-*Dernière mise à jour par l'agent : 2026-09-01 22:45*
+*Dernière mise à jour par l'agent : 2026-09-01 23:04*
 
 ## État actuel
 
-**21 tests unitaires (Vitest)** couvrent `lib/openai.ts` et `lib/filterPartitions.ts` (voir section 1). Aucun test d'intégration ni end-to-end automatisé n'existe encore — le reste de l'app (routes API, parcours UI complet) est vérifié par des smoke tests manuels (`curl`, navigation réelle via Playwright headless), documentés ci-dessous pour mémoire.
+**33 tests unitaires (Vitest)** couvrent `lib/openai.ts`, `lib/filterPartitions.ts` et `lib/validation.ts` (voir section 1). Aucun test d'intégration ni end-to-end automatisé n'existe encore — le reste de l'app (routes API, parcours UI complet) est vérifié par des smoke tests manuels (`curl`, navigation réelle via Playwright headless), documentés ci-dessous pour mémoire.
 
 **Commande** : `npm test` (lance `vitest run`, une seule passe, pas de mode watch).
 
@@ -34,6 +34,7 @@ Ces vérifications n'ont **pas** couvert : la vue mobile (`MobileViewer`) sur un
 |---|---|---|
 | `lib/openai.ts` | `lib/openai.test.ts` | `extractResponseText` (format `output_text` direct, format `output[].content[].text` imbriqué, éléments ignorés si pas `output_text`, chaîne vide si rien d'exploitable) ; `normalizeInsight` (accepte un payload valide, trim de tous les champs, rejette si `composerWord`/`tonalite`/`grille` manquant ou vide, rejette si moins de 3 anecdotes, tronque à 6 si plus fourni, filtre les éléments non-string, `null`/`undefined` en entrée) |
 | `lib/filterPartitions.ts` | `lib/filterPartitions.test.ts` | Recherche vide/`< 3` caractères → tout affiché, filtre par titre/compositeur/catégorie insensible à la casse, syntaxe `"(Bb)"` → filtre exact sur `musical_key` (insensible à la casse), aucun résultat → tableau vide, **partitions avec `composer`/`musical_key`/`category` à `null` → ne plante pas** (voir `DOC/error.md` #7, bug réel découvert en écrivant ce test) |
+| `lib/validation.ts` | `lib/validation.test.ts` | `validatePartitionInput` (accepte un input valide + trim, normalise `musical_key`/`category` absents en `null`, rejette titre/compositeur vide, rejette au-delà des limites de longueur, accepte pile à la limite) ; `isValidPartitionId` (accepte nombre/chaîne non vide, `0` est un id valide, rejette `null`/`undefined`/`NaN`/chaîne vide) |
 
 **Refactos nécessaires pour rendre ça possible** (voir `DOC/refacto.md`) : `extractResponseText`/`normalizeInsight` exportées depuis `lib/openai.ts` (étaient des fonctions privées du module) ; logique de filtre de `SearchList.tsx` extraite dans `lib/filterPartitions.ts` (était inline dans le composant).
 
@@ -46,7 +47,7 @@ Plus lourds à mettre en place (nécessitent de mocker `postgres`, `cloudinary`,
 - `GET /api/partitions` : 200 + forme de la réponse avec DB mockée ; 500 si la requête SQL échoue.
 - `PUT /api/partitions/[id]` : 403 si mot de passe absent/incorrect ; 400 si `title`/`composer` vides ; 404 si `id` inexistant ; 200 + upsert du compositeur sur succès.
 - `POST /api/ai/song-insight` : 400 si champs requis manquants ; cache hit (DB mockée avec résultat existant) ne doit **jamais** appeler `generateSongInsight` ; cache miss appelle OpenAI puis persiste le résultat ; 500 si OpenAI échoue ou renvoie un JSON invalide.
-- `GET /api/sync` : toujours 200 avec le message de confirmation, même si `syncPartitions()` lève une erreur en interne (comportement actuel : l'erreur est loguée mais jamais renvoyée au client — à confirmer que c'est le comportement voulu, voir `DOC/refacto.md`).
+- `GET /api/sync` : 200 avec le message de confirmation si la synchro réussit ; **500 si `syncPartitions()` échoue** (corrigé le 2026-09-01, `syncPartitions()` relance désormais l'erreur au lieu de l'avaler — voir `DOC/refacto.md`).
 
 ### 3. Test de bout en bout (priorité basse, le plus proche de l'usage réel)
 

@@ -1,57 +1,43 @@
 import { sql } from "@/lib/db";
 import { checkEditPassword, delayFailedAuth } from "@/lib/auth";
+import { validatePartitionInput } from "@/lib/validation";
+import { withErrorHandling } from "@/lib/withErrorHandling";
 
-const MAX_TITLE_COMPOSER_LENGTH = 200;
-const MAX_CATEGORY_LENGTH = 100;
-const MAX_MUSICAL_KEY_LENGTH = 20;
-
-export async function PUT(request: Request, ctx: RouteContext<"/api/partitions/[id]">) {
+export const PUT = withErrorHandling(async (request: Request, ctx: RouteContext<"/api/partitions/[id]">) => {
   const { id } = await ctx.params;
-  const { password, title, composer, musical_key, category } = await request.json();
+  const { password, ...body } = await request.json();
 
   if (!checkEditPassword(password)) {
     await delayFailedAuth();
     return Response.json({ error: "Mot de passe incorrect" }, { status: 403 });
   }
 
-  if (!title?.trim() || !composer?.trim()) {
-    return Response.json({ error: "Titre et compositeur obligatoires" }, { status: 400 });
+  const validation = validatePartitionInput(body);
+  if (!validation.valid) {
+    return Response.json({ error: validation.error }, { status: 400 });
+  }
+  const { title, composer, musical_key, category } = validation.data;
+
+  const [comp] = await sql`
+    INSERT INTO composers (name) VALUES (${composer})
+    ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
+    RETURNING id
+  `;
+
+  const result = await sql`
+    UPDATE partitions
+    SET title = ${title},
+        composer = ${composer},
+        composer_id = ${comp.id},
+        musical_key = ${musical_key},
+        category = ${category}
+    WHERE id = ${id}
+    RETURNING id, title, composer, musical_key, category, name_pdf, pdf_url
+  `;
+
+  if (result.length === 0) {
+    return Response.json({ error: "Partition non trouvée" }, { status: 404 });
   }
 
-  if (
-    title.trim().length > MAX_TITLE_COMPOSER_LENGTH ||
-    composer.trim().length > MAX_TITLE_COMPOSER_LENGTH ||
-    (musical_key && musical_key.trim().length > MAX_MUSICAL_KEY_LENGTH) ||
-    (category && category.trim().length > MAX_CATEGORY_LENGTH)
-  ) {
-    return Response.json({ error: "Un ou plusieurs champs dépassent la longueur autorisée" }, { status: 400 });
-  }
-
-  try {
-    const [comp] = await sql`
-      INSERT INTO composers (name) VALUES (${composer.trim()})
-      ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
-      RETURNING id
-    `;
-
-    const result = await sql`
-      UPDATE partitions
-      SET title = ${title.trim()},
-          composer = ${composer.trim()},
-          composer_id = ${comp.id},
-          musical_key = ${musical_key?.trim() || null},
-          category = ${category?.trim() || null}
-      WHERE id = ${id}
-      RETURNING id, title, composer, musical_key, category, name_pdf, pdf_url
-    `;
-
-    if (result.length === 0) {
-      return Response.json({ error: "Partition non trouvée" }, { status: 404 });
-    }
-
-    return Response.json(result[0]);
-  } catch (error) {
-    console.error(error);
-    return Response.json({ error: "Erreur serveur" }, { status: 500 });
-  }
-}
+  return Response.json(result[0]);
+});
