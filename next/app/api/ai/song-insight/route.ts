@@ -2,13 +2,24 @@ import { sql } from "@/lib/db";
 import { generateSongInsight } from "@/lib/openai";
 
 export async function POST(request: Request) {
-  const { partitionId, title, composer } = await request.json();
+  const { partitionId } = await request.json();
 
-  if (!partitionId || typeof title !== "string" || !title.trim() || typeof composer !== "string" || !composer.trim()) {
-    return Response.json({ error: "Les champs partitionId, title et composer sont requis." }, { status: 400 });
+  if (!partitionId) {
+    return Response.json({ error: "Le champ partitionId est requis." }, { status: 400 });
   }
 
   try {
+    const [partition] = await sql`
+      SELECT p.id, p.title, c.name AS composer
+      FROM partitions p
+      LEFT JOIN composers c ON c.id = p.composer_id
+      WHERE p.id = ${partitionId}
+    `;
+
+    if (!partition) {
+      return Response.json({ error: "Partition non trouvée." }, { status: 404 });
+    }
+
     const cached = await sql`
       SELECT si.composer_word, si.tonalite, si.grille,
              array_agg(a.content ORDER BY a.position) AS anecdotes
@@ -29,8 +40,8 @@ export async function POST(request: Request) {
       });
     }
 
-    console.log(`🤖 Génération OpenAI pour "${title}" (${composer})`);
-    const insight = await generateSongInsight({ title: title.trim(), composer: composer.trim() });
+    console.log(`🤖 Génération OpenAI pour "${partition.title}" (${partition.composer})`);
+    const insight = await generateSongInsight({ title: partition.title, composer: partition.composer });
 
     const [savedInsight] = await sql`
       INSERT INTO song_insights (partition_id, composer_word, tonalite, grille)

@@ -42,6 +42,12 @@ export default function EditMetadataDialog({ partition, onUpdated }: Props) {
     setError("");
     setLoading(true);
 
+    if (!password.trim()) {
+      setError("Le mot de passe est requis.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/partitions/${partition.id}`,
@@ -133,6 +139,7 @@ export default function EditMetadataDialog({ partition, onUpdated }: Props) {
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder="Mot de passe"
+              required
             />
           </div>
 

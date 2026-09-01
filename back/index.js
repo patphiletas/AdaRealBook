@@ -256,7 +256,9 @@ app.put("/api/partitions/:id", async (req, res) => {
   const { id } = req.params;
   const { password, title, composer, musical_key, category } = req.body;
 
-  if (password !== process.env.EDIT_PASSWORD) {
+  const expectedPassword = (process.env.EDIT_PASSWORD || '').trim();
+  console.log(`🔑 password reçu: "${password}" | attendu: "${expectedPassword}" | match: ${password === expectedPassword}`);
+  if (!expectedPassword || !password || password !== expectedPassword) {
     return res.status(403).json({ error: "Mot de passe incorrect" });
   }
 

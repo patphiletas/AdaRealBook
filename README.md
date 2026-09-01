@@ -8,15 +8,17 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-000000?style=for-the-badge&logo=vercel)](https://real-book-patphiletas-projects.vercel.app/)
 &nbsp;
+[![Next.js](https://img.shields.io/badge/Next.js%2016-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+&nbsp;
 [![React](https://img.shields.io/badge/React%2019-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
 &nbsp;
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 &nbsp;
-[![Express](https://img.shields.io/badge/Express%205-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
-&nbsp;
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://neon.tech/)
 
 </div>
+
+*Dernière mise à jour par l'agent : 2026-09-01 21:02*
 
 ---
 
@@ -28,7 +30,9 @@
 
 <br/>
 
-AdaRealBook est une application web de consultation de partitions jazz. Elle combine un front React/Vite pour la lecture des PDF, une API Express, une base PostgreSQL sur Neon, un stockage Cloudinary, et une fiche IA générée à la demande pour chaque morceau.
+AdaRealBook est une application web de consultation de partitions jazz, en **Next.js** (App Router) : UI de lecture des PDF et API (Route Handlers) dans un seul projet, une base PostgreSQL sur Neon, un stockage Cloudinary, et une fiche IA générée à la demande pour chaque morceau.
+
+> **Le projet vit dans [`next/`](next/).** Les dossiers `front/` et `back/` à la racine sont l'ancienne architecture (front Vite séparé + backend Express sur Render), conservés temporairement pendant la validation de la migration — voir [`next/DOC/roadmap.md`](next/DOC/roadmap.md) pour l'historique et la suite prévue (suppression de ces deux dossiers).
 
 ---
 
@@ -51,11 +55,13 @@ AdaRealBook est une application web de consultation de partitions jazz. Elle com
 
 | Couche | Technologie |
 |---|---|
-| Frontend | React 19, TypeScript, Vite, Tailwind CSS, `react-pdf` |
-| Backend | Node.js, Express 5 |
+| Framework | Next.js 16 (App Router, Turbopack), TypeScript |
+| UI | React 19, Tailwind CSS v4, `react-pdf` |
+| API | Route Handlers Next.js (même projet que l'UI, plus de serveur séparé) |
 | Base de données | PostgreSQL via [Neon](https://neon.tech) |
 | Stockage | [Cloudinary](https://cloudinary.com) |
 | IA | OpenAI Responses API |
+| Hébergement | [Vercel](https://vercel.com) (front + API dans le même déploiement) |
 
 ---
 
@@ -63,13 +69,16 @@ AdaRealBook est une application web de consultation de partitions jazz. Elle com
 
 ```
 AdaRealBook/
-├── front/          # Interface React + Vite
-│   └── src/
-│       ├── components/   # SearchList, PdfViewer, MobileViewer
-│       ├── types/        # Interfaces TypeScript
-│       └── App.tsx       # Composant racine
-├── back/
-│   └── index.js          # API Express + sync Cloudinary + cache IA
+├── next/                 # Le projet actif — voir next/README.md pour le détail
+│   ├── app/
+│   │   ├── page.tsx          # UI principale (Client Component)
+│   │   └── api/               # Route Handlers : partitions, ai/song-insight, sync
+│   ├── components/           # SearchList, PdfViewer, MobileViewer, EditMetadataDialog
+│   ├── lib/                   # db.ts, cloudinary.ts, openai.ts, pdfWorker.ts
+│   ├── DOC/                    # Documentation détaillée (voir plus bas)
+│   └── AGENTS.md                # Instructions pour tout agent IA qui reprend ce code
+├── front/                # Legacy — ancien front React + Vite, en attente de suppression
+├── back/                 # Legacy — ancien backend Express (Render), en attente de suppression
 └── assets/               # Images du README
 ```
 
@@ -96,17 +105,11 @@ name ──────────── composer_id (FK)        partition_id (
 ## Installation
 
 ```bash
-# Dépendances
-cd front && npm install
-cd ../back && npm install
+cd next
+npm install
 ```
 
-**`front/.env`**
-```env
-VITE_API_URL=http://localhost:3001
-```
-
-**`back/.env`**
+**`next/.env.local`**
 ```env
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
@@ -114,7 +117,7 @@ CLOUDINARY_API_SECRET=your_api_secret
 DATABASE_URL=postgresql://user:password@host:5432/database?sslmode=require
 OPENAI_API_KEY=your_openai_api_key
 OPENAI_MODEL=gpt-4.1-mini
-PORT=3001
+EDIT_PASSWORD=your_edit_password
 ```
 
 ---
@@ -122,15 +125,12 @@ PORT=3001
 ## Lancement
 
 ```bash
-# Terminal 1 — API
-cd back && npm run dev
-
-# Terminal 2 — Front
-cd front && npm run dev
+cd next
+npm run dev      # http://localhost:3000
+npm run build    # avant tout déploiement
 ```
 
-- Front : `http://127.0.0.1:5173`
-- API : `http://localhost:3001`
+Un seul serveur, un seul port — plus de front/API séparés à lancer.
 
 ---
 
@@ -157,10 +157,33 @@ cd front && npm run dev
 ## Prochaines évolutions
 
 - [x] Édition des métadonnées depuis l'interface
-- [ ] Filtres avancés (tonalité, époque, style)
+- [x] Migration vers un Next.js unique (front + API), coupure du backend Express/Render
+- [ ] Filtres avancés en UI (tonalité, catégorie) — voir [`next/DOC/features.md`](next/DOC/features.md) #1
+- [ ] Favoris / dernières partitions consultées — voir [`next/DOC/features.md`](next/DOC/features.md) #2
 - [ ] Gestion multi-volumes
 - [ ] Favoris, playlists et sets
 - [ ] Authentification
+- [ ] Suppression de `front/` et `back/` une fois `next/` définitivement validé
+
+Analyse détaillée (difficulté, pertinence, avis) de ces pistes et d'autres dans [`next/DOC/features.md`](next/DOC/features.md).
+
+---
+
+## Documentation complémentaire
+
+Toute la documentation détaillée du projet vit dans [`next/`](next/) (le projet actif) :
+
+| Fichier | Contenu |
+|---|---|
+| [next/AGENTS.md](next/AGENTS.md) | Instructions pour tout agent IA (Claude ou autre) qui reprend ce projet |
+| [next/DOC/error.md](next/DOC/error.md) | Historique des bugs/blocages rencontrés (dont la migration Vercel) et leur résolution |
+| [next/DOC/test.md](next/DOC/test.md) | État des tests (aucun automatisé à ce jour), checklist manuelle, plan de tests proposé |
+| [next/DOC/roadmap.md](next/DOC/roadmap.md) | Historique des évolutions + pistes identifiées |
+| [next/DOC/features.md](next/DOC/features.md) | Analyse faisabilité/difficulté/pertinence des idées d'amélioration UI/UX/technique |
+| [next/DOC/securite.md](next/DOC/securite.md) | Modèle de menace, choix et limites de sécurité |
+| [next/DOC/refacto.md](next/DOC/refacto.md) | Dette technique identifiée, faite ou à faire |
+
+Cette documentation est vivante : **elle doit être mise à jour à chaque modification du projet**, pas seulement relue de temps en temps (voir `next/AGENTS.md`).
 
 ---
 
