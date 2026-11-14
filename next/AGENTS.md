@@ -87,7 +87,7 @@ Des tests unitaires existent (`npm test`, voir `DOC/test.md`), mais aucun test d
 
 - Le dépôt GitHub (`patphiletas/AdaRealBook`) est connecté au projet Vercel `real-book` : un `git push` sur `main` redéploie automatiquement en production.
 - **Root Directory du projet Vercel = `next`** (le dépôt ne contient plus que ce dossier à sa racine, mais le réglage reste nécessaire — Vercel ne le déduit pas automatiquement).
-- URL de production réellement utilisée (CV, partage) : `https://real-book-patphiletas-projects.vercel.app`. D'autres alias existent (`ada-real-book*`, `real-book-patphiletas.vercel.app` sans "-projects") mais ne sont pas à jour ou pas utilisés — voir piège #5 ci-dessus et `DOC/roadmap.md`.
+- URL de production : `https://real-book-patphiletas.vercel.app` (domaine de production du projet, de nouveau à jour depuis le 2026-11-14 après réactivation de l'auto-assignation + Promote). `https://real-book-patphiletas-projects.vercel.app` (celle du CV) sert aussi la dernière version. Les alias `ada-real-book*` ne sont plus utilisés.
 - **Patrice gère lui-même le déploiement, les réglages Vercel et le push Git** — un agent n'a pas d'accès SSH/CLI authentifié pour pousser du code depuis cet environnement. Un agent peut : modifier le code local, lancer `npm run build` pour vérifier, indiquer clairement les commandes à exécuter (`git add`/`commit`/`push`) et les réglages Vercel à changer, mais pas les exécuter à la place de Patrice sans un accès explicitement fourni.
 - Un agent peut en revanche interroger l'état de Vercel (déploiements, logs de build, variables d'environnement) via le serveur MCP Vercel s'il est connecté, pour diagnostiquer sans avoir besoin d'accès CLI.
 
