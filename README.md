@@ -18,7 +18,7 @@
 
 </div>
 
-*Dernière mise à jour par l'agent : 2026-11-14 23:10*
+*Dernière mise à jour par l'agent : 2026-11-14 23:17*
 
 ---
 
@@ -49,6 +49,9 @@ AdaRealBook est une application web de consultation de partitions jazz, en **Nex
 | ✏️ Édition | Modification des métadonnées (titre, compositeur, tonalité, catégorie) protégée par mot de passe |
 | 🔍 Fit-to-view | La partition s'affiche en entier à l'ouverture, zoom libre ensuite |
 | 🔗 Lien par morceau | Chaque morceau ouvert a sa propre adresse (`?morceau=a-night-in-tunisia-6`) : lien partageable, rechargement sans perte, bouton « retour » du navigateur qui referme la partition, titre d'onglet au nom du morceau |
+| 🎵 Tonalités | Pastilles de tonalité de même largeur, sur deux lignes (C, Bb, F, Eb…, de la plus fréquente à la plus rare) au-dessus de la liste, combinables avec la recherche |
+| ★ Favoris et récents | Étoile sur la partition ouverte ; onglets « Tous / ★ Favoris / Récents » (12 derniers morceaux) ; gardés dans le navigateur, sans compte |
+| ☾ Mode scène | Interface sombre **et partition inversée** (notes claires sur fond noir) pour jouer dans la pénombre ; suit d'abord le réglage de l'appareil puis retient le choix, sans flash clair au chargement |
 | ⏳ États | Message pendant le chargement de la liste, message d'erreur avec bouton « Réessayer » si l'API ne répond pas |
 | ⌨️ Accessibilité | Liste des morceaux utilisable au clavier (boutons, morceau courant annoncé), champ de recherche étiqueté, zone `<main>` |
 
@@ -79,7 +82,8 @@ AdaRealBook/
 │   │   ├── page.tsx          # UI principale (Client Component)
 │   │   └── api/               # Route Handlers : partitions, ai/song-insight, sync
 │   ├── components/           # SearchList, PdfViewer, MobileViewer, EditMetadataDialog
-│   ├── lib/                   # db.ts, cloudinary.ts, openai.ts, pdfWorker.ts, auth.ts, morceauUrl.ts (adresse par morceau)
+│   ├── lib/                   # db.ts, cloudinary.ts, openai.ts, pdfWorker.ts, auth.ts, morceauUrl.ts (adresse par morceau),
+│   │                          # bibliotheque.ts (favoris, récents, tonalités), stockage.ts (localStorage)
 │   ├── DOC/                    # Documentation détaillée (voir plus bas)
 │   └── AGENTS.md                # Instructions pour tout agent IA qui reprend ce code
 └── assets/               # Images du README
@@ -164,10 +168,10 @@ Un seul serveur, un seul port — plus de front/API séparés à lancer.
 - [x] Migration vers un Next.js unique (front + API), coupure du backend Express/Render
 - [x] Suppression de `front/` et `back/`, CI (build + tests sur chaque push)
 - [x] Adresse par morceau, états de chargement/erreur, accessibilité clavier, CI avec lint et vérification des types (2026-11-14)
-- [ ] Filtres avancés en UI (tonalité, catégorie) — voir [`next/DOC/features.md`](next/DOC/features.md) #1
-- [ ] Favoris / dernières partitions consultées — voir [`next/DOC/features.md`](next/DOC/features.md) #2
+- [x] Filtre par tonalité en pastilles, favoris et récents, mode scène (2026-11-14)
+- [ ] Filtre par catégorie / style — voir [`next/DOC/features.md`](next/DOC/features.md) #5
 - [ ] Gestion multi-volumes
-- [ ] Favoris, playlists et sets
+- [ ] Playlists et sets
 - [ ] Authentification
 
 Analyse détaillée (difficulté, pertinence, avis) de ces pistes et d'autres dans [`next/DOC/features.md`](next/DOC/features.md).
@@ -182,7 +186,7 @@ Toute la documentation détaillée du projet vit dans [`next/`](next/) (le proje
 |---|---|
 | [next/AGENTS.md](next/AGENTS.md) | Instructions pour tout agent IA (Claude ou autre) qui reprend ce projet |
 | [next/DOC/error.md](next/DOC/error.md) | Historique des bugs/blocages rencontrés (dont la migration Vercel) et leur résolution |
-| [next/DOC/test.md](next/DOC/test.md) | État des tests (50 tests unitaires Vitest), checklist manuelle, plan de tests pour la suite |
+| [next/DOC/test.md](next/DOC/test.md) | État des tests (62 tests unitaires Vitest), checklist manuelle, plan de tests pour la suite |
 | [next/DOC/roadmap.md](next/DOC/roadmap.md) | Historique des évolutions + pistes identifiées |
 | [next/DOC/features.md](next/DOC/features.md) | Analyse faisabilité/difficulté/pertinence des idées d'amélioration UI/UX/technique |
 | [next/DOC/securite.md](next/DOC/securite.md) | Modèle de menace, choix et limites de sécurité |

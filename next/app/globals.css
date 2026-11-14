@@ -8,6 +8,60 @@
   --ada-ink: #231f1b;
   --ada-muted: #655d55;
   --ada-accent: #b7753d;
+  /* Dégradés de l'interface (repris dans app/page.tsx et EditMetadataDialog) */
+  --ada-fond: linear-gradient(180deg, #f9f5ee 0%, #f6f1e8 58%, #f2ece2 100%);
+  --ada-entete: linear-gradient(180deg, rgba(255, 255, 252, 0.98) 0%, rgba(247, 243, 237, 0.96) 100%);
+  --ada-fiche: linear-gradient(145deg, #fffdf7 0%, #fff6ea 45%, #fbe9d7 100%);
+}
+
+/* ------------------------------------------------------------------
+   Mode scène : interface sombre et partition inversée (notes claires sur
+   fond noir) pour jouer dans la pénombre. data-theme="dark" est posé sur
+   <html> avant l'affichage (script dans app/layout.tsx).
+   Les couleurs Tailwind utilisées par l'app (stone, amber, white, red)
+   sont redéfinies : clair ↔ sombre, sans toucher aux classes des composants.
+   ------------------------------------------------------------------ */
+[data-theme="dark"] {
+  color-scheme: dark;
+  --ada-bg-1: #171412;
+  --ada-bg-2: #110f0d;
+  --ada-ink: #f2ece2;
+  --ada-muted: #b9afa4;
+  --ada-fond: linear-gradient(180deg, #171412 0%, #13110f 58%, #0f0d0c 100%);
+  --ada-entete: linear-gradient(180deg, rgba(30, 26, 23, 0.98) 0%, rgba(24, 21, 18, 0.96) 100%);
+  --ada-fiche: linear-gradient(145deg, #221d18 0%, #1e1915 45%, #1a1512 100%);
+
+  --color-white: #1f1b17;
+  --color-stone-50: oklch(18% 0.004 49);
+  --color-stone-100: oklch(21.6% 0.006 56.043);
+  --color-stone-200: oklch(29% 0.007 34.298);
+  --color-stone-300: oklch(40% 0.01 67.558);
+  --color-stone-400: oklch(62% 0.01 56.259);
+  --color-stone-500: oklch(70% 0.012 58.071);
+  --color-stone-600: oklch(78% 0.01 73.639);
+  --color-stone-700: oklch(86.9% 0.005 56.366);
+  --color-stone-800: oklch(92.3% 0.003 48.717);
+  --color-stone-900: oklch(97% 0.001 106.424);
+  --color-stone-950: oklch(98.5% 0.001 106.423);
+  --color-amber-50: oklch(24% 0.03 60);
+  --color-amber-100: oklch(28% 0.04 60);
+  --color-amber-200: oklch(34% 0.05 60);
+  --color-amber-300: oklch(42% 0.07 60);
+  --color-amber-700: oklch(80% 0.12 80);
+  --color-amber-800: oklch(85% 0.1 85);
+  --color-amber-900: oklch(90% 0.07 90);
+  --color-amber-950: oklch(94% 0.04 95);
+  --color-red-600: oklch(72% 0.17 25);
+  --color-red-700: oklch(76% 0.15 25);
+}
+
+/* Partition inversée : notes claires sur fond sombre (bureau et mobile) */
+[data-theme="dark"] .react-pdf__Page__canvas {
+  filter: invert(0.9) hue-rotate(180deg);
+}
+
+[data-theme="dark"] .react-pdf__Page {
+  background: transparent !important;
 }
 
 * {

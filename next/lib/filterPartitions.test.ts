@@ -60,3 +60,30 @@ describe("filterPartitions", () => {
     expect(() => filterPartitions(withNulls, "(Bb)")).not.toThrow();
   });
 });
+
+import { listeSelonVue } from "./filterPartitions";
+
+describe("filterPartitions — pastille de tonalité", () => {
+  it("ne garde que la tonalité choisie", () => {
+    expect(filterPartitions(partitions, "", { tonalite: "Bb" }).map((p) => p.id)).toEqual([1, 2]);
+  });
+  it("se combine avec la recherche texte", () => {
+    expect(filterPartitions(partitions, "bill", { tonalite: "Bb" }).map((p) => p.id)).toEqual([2]);
+    expect(filterPartitions(partitions, "miles", { tonalite: "Bb" })).toEqual([]);
+  });
+  it("ignore la casse", () => {
+    expect(filterPartitions(partitions, "", { tonalite: "dm" }).map((p) => p.id)).toEqual([3]);
+  });
+});
+
+describe("listeSelonVue", () => {
+  it("tous : la liste entière", () => {
+    expect(listeSelonVue(partitions, "tous", [3], [2])).toEqual(partitions);
+  });
+  it("favoris : seulement les favoris, ordre de la bibliothèque", () => {
+    expect(listeSelonVue(partitions, "favoris", [3, 1], []).map((p) => p.id)).toEqual([1, 3]);
+  });
+  it("récents : du plus récent au plus ancien, ids disparus ignorés", () => {
+    expect(listeSelonVue(partitions, "recents", [], [3, 99, 1]).map((p) => p.id)).toEqual([3, 1]);
+  });
+});

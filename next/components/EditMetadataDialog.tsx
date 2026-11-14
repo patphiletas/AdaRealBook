@@ -74,7 +74,7 @@ export default function EditMetadataDialog({ partition, onUpdated }: Props) {
 
   const modal = (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-6">
-      <div className="w-full max-w-md rounded-2xl border border-amber-200/50 bg-[linear-gradient(145deg,#fffdf7_0%,#fff6ea_45%,#fbe9d7_100%)] shadow-2xl">
+      <div className="w-full max-w-md rounded-2xl border border-amber-200/50 bg-[image:var(--ada-fiche)] shadow-2xl">
         <div className="flex items-center justify-between px-6 py-4 border-b border-amber-200/50">
           <h2 className="text-base font-bold text-amber-950">Modifier les métadonnées</h2>
           <button

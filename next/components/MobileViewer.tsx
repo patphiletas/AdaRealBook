@@ -24,6 +24,10 @@ export default function MobileViewer({
   insightLoading,
   onOpenInsight,
   onPartitionUpdated,
+  estFavori,
+  onBasculerFavori,
+  theme,
+  onBasculerTheme,
 }: MobileViewerProps) {
 
   const pageWidth = pdfWidth * scale;
@@ -69,6 +73,24 @@ export default function MobileViewer({
               {insightLoading ? "Analyse IA en cours..." : "Ouvrir la fiche"}
             </button>
             <EditMetadataDialog partition={partition} onUpdated={onPartitionUpdated} />
+            <button
+              type="button"
+              onClick={onBasculerFavori}
+              aria-pressed={estFavori}
+              aria-label={estFavori ? "Retirer des favoris" : "Ajouter aux favoris"}
+              className="mobileviewer-button"
+            >
+              {estFavori ? "★" : "☆"}
+            </button>
+            <button
+              type="button"
+              onClick={onBasculerTheme}
+              aria-pressed={theme === "dark"}
+              aria-label={theme === "dark" ? "Revenir au mode jour" : "Mode scène : partition inversée"}
+              className="mobileviewer-button"
+            >
+              {theme === "dark" ? "☀" : "☾"}
+            </button>
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 # Suggestions d'amélioration — étude de faisabilité
 
-*Dernière mise à jour par l'agent : 2026-09-01 21:02*
+*Dernière mise à jour par l'agent : 2026-11-14 23:17*
 
 Idées d'amélioration UI/UX et techniques pour AdaRealBook, en s'appuyant sur le code actuel (`next/`) et les évolutions déjà notées dans le README ("Prochaines évolutions"). **Aucun code n'a été touché pour produire ce document** — c'est une étude de faisabilité, de difficulté, et un avis honnête sur la pertinence, pas une implémentation.
 
@@ -27,7 +27,7 @@ Idées d'amélioration UI/UX et techniques pour AdaRealBook, en s'appuyant sur l
 
 ---
 
-## 1. Filtres avancés en UI (tonalité, catégorie) — 🟢 faible, 🟢 pertinent
+## 1. Filtres avancés en UI (tonalité, catégorie) — 🟢 faible, 🟢 pertinent — ✅ tonalité faite le 2026-11-14 (pastilles), catégorie à faire
 
 **Contexte** : déjà noté dans le README ("Filtres avancés (tonalité, époque, style)"). Aujourd'hui, filtrer par tonalité passe par une syntaxe cachée dans le champ de recherche (`"(Bb)"`), non découvrable sans lire le placeholder attentivement — et il n'y a aucun filtre par `category` (Realbook, Blues, Bebop...) alors que la donnée existe déjà en base et s'affiche déjà dans le bandeau "morceau en cours".
 
@@ -37,7 +37,7 @@ Idées d'amélioration UI/UX et techniques pour AdaRealBook, en s'appuyant sur l
 
 ---
 
-## 2. Favoris / dernières partitions consultées — 🟢 faible, 🟢 pertinent
+## 2. Favoris / dernières partitions consultées — 🟢 faible, 🟢 pertinent — ✅ fait le 2026-11-14 (localStorage, onglets Favoris / Récents)
 
 **Ce que ça implique** : pas besoin de nouvelle table côté DB pour un usage mono-utilisateur — `localStorage` suffit (liste d'IDs de partitions, mise à jour à chaque sélection ou clic sur une étoile). Affiché en tête de la liste ou dans un onglet dédié.
 
@@ -45,7 +45,7 @@ Idées d'amélioration UI/UX et techniques pour AdaRealBook, en s'appuyant sur l
 
 ---
 
-## 3. Recherche : rendre la syntaxe `(Bb)` découvrable, revoir le seuil de 3 caractères — 🟢 faible, 🟡 pertinent
+## 3. Recherche : rendre la syntaxe `(Bb)` découvrable, revoir le seuil de 3 caractères — 🟢 faible, 🟡 pertinent — en partie réglé : les pastilles de tonalité rendent la syntaxe `(Bb)` inutile (elle reste acceptée)
 
 **Contexte** : `components/SearchList.tsx` a deux comportements non évidents pour un nouvel utilisateur : (a) taper moins de 3 caractères affiche tout (pas de filtrage réel avant ce seuil), (b) entourer une tonalité de parenthèses (`"(Bb)"`) déclenche un filtre exact au lieu d'une recherche texte.
 
@@ -55,7 +55,7 @@ Idées d'amélioration UI/UX et techniques pour AdaRealBook, en s'appuyant sur l
 
 ---
 
-## 4. Mode sombre — 🟡 moyenne, 🟡 pertinent
+## 4. Mode sombre — 🟡 moyenne, 🟡 pertinent — ✅ fait le 2026-11-14 sous forme de « mode scène » : l'objection ci-dessous (PDF resté blanc) est levée en inversant aussi la partition (`filter: invert` sur le canvas react-pdf)
 
 **Ce que ça implique** : la palette actuelle (crème/ambre, `app/globals.css`) est fixe, sans gestion de `prefers-color-scheme`. Un mode sombre demanderait de redéfinir les variables CSS (`--ada-bg-1`, `--ada-ink`, etc.) sous une media query, plus une vérification de contraste sur le fond du PDF lui-même (les partitions scannées restent blanches quel que soit le thème — pas un vrai "mode sombre" pour la zone de lecture, seulement pour le chrome de l'app).
 

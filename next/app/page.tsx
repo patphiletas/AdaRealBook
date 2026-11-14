@@ -1,12 +1,22 @@
 "use client";
 
-import { useState, useEffect, useCallback, useSyncExternalStore } from "react";
+import { useState, useEffect, useCallback, useMemo, useSyncExternalStore } from "react";
 import dynamic from "next/dynamic";
 import SearchList from "@/components/SearchList";
 import EditMetadataDialog from "@/components/EditMetadataDialog";
 
 import { morceauDepuisUrl, slugMorceau } from "@/lib/morceauUrl";
-import type { EtatListe, Partition, SongInsight } from "@/types/interface";
+import { listeSelonVue } from "@/lib/filterPartitions";
+import {
+  CLE_FAVORIS,
+  CLE_RECENTS,
+  ajouterRecent,
+  basculerFavori,
+  lireIds,
+  tonalitesDisponibles,
+} from "@/lib/bibliotheque";
+import { abonnerStockage, ecrireStockage, lireStockage } from "@/lib/stockage";
+import type { EtatListe, Partition, SongInsight, VueListe } from "@/types/interface";
 
 const PdfViewer = dynamic(() => import("@/components/PdfViewer"), { ssr: false });
 const MobileViewer = dynamic(() => import("@/components/MobileViewer"), { ssr: false });
@@ -22,6 +32,10 @@ function abonnerResize(rappel: () => void) {
 const lireLargeur = () => window.innerWidth;
 const largeurServeur = () => 1280;
 
+const CLE_THEME = "realbook:theme";
+const lireTheme = () => (document.documentElement.dataset.theme === "dark" ? "dark" : "light");
+const themeServeur = () => "light";
+
 export default function Home() {
   const [partitions, setPartitions] = useState<Partition[]>([]);
   const [etatListe, setEtatListe] = useState<EtatListe>("chargement");
@@ -31,6 +45,30 @@ export default function Home() {
   const [scale, setScale] = useState(1);
 
   const largeur = useSyncExternalStore(abonnerResize, lireLargeur, largeurServeur);
+
+  // Favoris, récents et mode scène : gardés dans le navigateur (lib/stockage.ts)
+  const favorisBrut = useSyncExternalStore(abonnerStockage, () => lireStockage(CLE_FAVORIS), () => null);
+  const recentsBrut = useSyncExternalStore(abonnerStockage, () => lireStockage(CLE_RECENTS), () => null);
+  const favoris = useMemo(() => lireIds(favorisBrut), [favorisBrut]);
+  const recents = useMemo(() => lireIds(recentsBrut), [recentsBrut]);
+  const theme = useSyncExternalStore(abonnerStockage, lireTheme, themeServeur);
+  const [vue, setVue] = useState<VueListe>("tous");
+  const [tonalite, setTonalite] = useState("");
+  const tonalites = useMemo(() => tonalitesDisponibles(partitions), [partitions]);
+  const listeAffichee = useMemo(
+    () => listeSelonVue(partitions, vue, favoris, recents),
+    [partitions, vue, favoris, recents]
+  );
+
+  const basculerTheme = useCallback(() => {
+    const suivant = lireTheme() === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = suivant;
+    ecrireStockage(CLE_THEME, suivant);
+  }, []);
+
+  const basculerFavoriMorceau = useCallback((id: number) => {
+    ecrireStockage(CLE_FAVORIS, JSON.stringify(basculerFavori(lireIds(lireStockage(CLE_FAVORIS)), id)));
+  }, []);
   const isMobile = largeur < MOBILE_BREAKPOINT;
   const pdfWidth = isMobile ? largeur - 32 : Math.floor(largeur * 0.66 - 48);
 
@@ -42,6 +80,7 @@ export default function Home() {
   // Change de morceau en remettant à zéro la vue (pages, zoom, fiche IA).
   const changerMorceau = useCallback((p: Partition | null) => {
     setSelected(p);
+    if (p) ecrireStockage(CLE_RECENTS, JSON.stringify(ajouterRecent(lireIds(lireStockage(CLE_RECENTS)), p.id)));
     setNumPages(0);
     setScale(1);
     setInsight(null);
@@ -173,11 +212,15 @@ export default function Home() {
           insightLoading={insightLoading}
           onOpenInsight={handleOpenInsight}
           onPartitionUpdated={handlePartitionUpdated}
+          estFavori={favoris.includes(selected.id)}
+          onBasculerFavori={() => basculerFavoriMorceau(selected.id)}
+          theme={theme}
+          onBasculerTheme={basculerTheme}
         />
         </main>
         {insightOpen && (
           <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-6">
-            <div className="w-full sm:max-w-2xl sm:rounded-2xl rounded-t-2xl border border-amber-200/50 bg-[linear-gradient(145deg,#fffdf7_0%,#fff6ea_45%,#fbe9d7_100%)] shadow-2xl">
+            <div className="w-full sm:max-w-2xl sm:rounded-2xl rounded-t-2xl border border-amber-200/50 bg-[image:var(--ada-fiche)] shadow-2xl">
               <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-amber-300/40">
                 <h2 className="text-base sm:text-lg font-bold tracking-tight text-amber-950">Fiche de {selected.composer}</h2>
                 <button type="button" onClick={handleCloseInsight} className="rounded-full px-3 py-1 text-xs font-semibold bg-amber-100 text-amber-900 hover:bg-amber-200">
@@ -228,9 +271,9 @@ export default function Home() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-[linear-gradient(180deg,#f9f5ee_0%,#f6f1e8_58%,#f2ece2_100%)] overflow-hidden">
+    <div className="h-screen flex flex-col bg-[image:var(--ada-fond)] overflow-hidden">
 
-      <header className="relative shrink-0 overflow-hidden border-b border-stone-200/80 bg-[linear-gradient(180deg,rgba(255,255,252,0.98)_0%,rgba(247,243,237,0.96)_100%)] px-6 py-4 shadow-sm backdrop-blur-sm">
+      <header className="relative shrink-0 overflow-hidden border-b border-stone-200/80 bg-[image:var(--ada-entete)] px-6 py-4 shadow-sm backdrop-blur-sm">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 opacity-50"
@@ -278,6 +321,10 @@ export default function Home() {
                 </p>
               </div>
               <div className="flex shrink-0 gap-2">
+                <BoutonFavori
+                  actif={favoris.includes(selected.id)}
+                  onClick={() => basculerFavoriMorceau(selected.id)}
+                />
                 <EditMetadataDialog partition={selected} onUpdated={handlePartitionUpdated} />
                 <button
                   type="button"
@@ -290,13 +337,22 @@ export default function Home() {
             </div>
           </div>
         )}
+        <BoutonScene theme={theme} onClick={basculerTheme} />
         </div>
       </header>
 
       <main className="flex flex-1 min-h-0">
         {isMobile ? (
           <SearchList
-            partitions={partitions}
+            partitions={listeAffichee}
+            vue={vue}
+            onVueChange={setVue}
+            tonalites={tonalites}
+            tonalite={tonalite}
+            onTonaliteChange={setTonalite}
+            favoris={favoris}
+            nbFavoris={favoris.length}
+            nbRecents={recents.length}
             search={search}
             onSearchChange={setSearch}
             selected={selected}
@@ -308,7 +364,15 @@ export default function Home() {
         ) : (
           <>
             <SearchList
-              partitions={partitions}
+              partitions={listeAffichee}
+              vue={vue}
+              onVueChange={setVue}
+              tonalites={tonalites}
+              tonalite={tonalite}
+              onTonaliteChange={setTonalite}
+              favoris={favoris}
+              nbFavoris={favoris.length}
+              nbRecents={recents.length}
               search={search}
               onSearchChange={setSearch}
               selected={selected}
@@ -332,7 +396,7 @@ export default function Home() {
       </main>
       {selected && insightOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-6">
-          <div className="w-full max-w-2xl rounded-2xl border border-amber-200/50 bg-[linear-gradient(145deg,#fffdf7_0%,#fff6ea_45%,#fbe9d7_100%)] shadow-2xl">
+          <div className="w-full max-w-2xl rounded-2xl border border-amber-200/50 bg-[image:var(--ada-fiche)] shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-amber-300/40">
               <h2 className="text-lg font-bold tracking-tight text-amber-950">Fiche de {selected.composer}</h2>
 
@@ -381,5 +445,37 @@ export default function Home() {
       )}
 
     </div>
+  );
+}
+
+function BoutonFavori({ actif, onClick }: { actif: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={actif}
+      aria-label={actif ? "Retirer des favoris" : "Ajouter aux favoris"}
+      title={actif ? "Retirer des favoris" : "Ajouter aux favoris"}
+      className={`rounded-full border px-2.5 py-1.5 text-xs font-semibold transition-colors ${
+        actif ? "border-amber-500 bg-amber-100 text-amber-900" : "border-stone-300 bg-white text-stone-600 hover:bg-stone-100"
+      }`}
+    >
+      {actif ? "★" : "☆"}
+    </button>
+  );
+}
+
+function BoutonScene({ theme, onClick }: { theme: string; onClick: () => void }) {
+  const scene = theme === "dark";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={scene}
+      title="Mode scène : interface sombre et partition inversée, pour jouer dans la pénombre"
+      className="shrink-0 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 transition-colors hover:bg-stone-100"
+    >
+      {scene ? "☀ Mode jour" : "☾ Mode scène"}
+    </button>
   );
 }

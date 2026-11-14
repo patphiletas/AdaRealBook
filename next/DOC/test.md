@@ -1,10 +1,10 @@
 # Tests
 
-*Dernière mise à jour par l'agent : 2026-11-14 23:10*
+*Dernière mise à jour par l'agent : 2026-11-14 23:17*
 
 ## État actuel
 
-**50 tests unitaires (Vitest)** couvrent `lib/openai.ts`, `lib/filterPartitions.ts`, `lib/validation.ts`, `lib/auth.ts` et `lib/morceauUrl.ts` (adresse par morceau : slug, lecture de l'identifiant, lien dont le titre a changé) (voir section 1). Aucun test d'intégration ni end-to-end automatisé n'existe encore — le reste de l'app (routes API, parcours UI complet) est vérifié par des smoke tests manuels (`curl`, navigation réelle via Playwright headless), documentés ci-dessous pour mémoire.
+**62 tests unitaires (Vitest)** couvrent `lib/openai.ts`, `lib/filterPartitions.ts` (dont filtre par tonalité et onglets Favoris/Récents), `lib/validation.ts`, `lib/auth.ts`, `lib/bibliotheque.ts` (favoris, récents, tonalités, relecture robuste du localStorage) et `lib/morceauUrl.ts` (adresse par morceau : slug, lecture de l'identifiant, lien dont le titre a changé) (voir section 1). Aucun test d'intégration ni end-to-end automatisé n'existe encore — le reste de l'app (routes API, parcours UI complet) est vérifié par des smoke tests manuels (`curl`, navigation réelle via Playwright headless), documentés ci-dessous pour mémoire.
 
 **Commande** : `npm test` (lance `vitest run`, une seule passe, pas de mode watch).
 
@@ -60,7 +60,7 @@ Outil déjà utilisé avec succès pendant la migration : **Playwright**.
 
 ### 4. Checklist manuelle à rejouer après tout changement touchant à l'UI ou aux routes API
 
-*Ajouts du 2026-11-14 (vérifiés en local) : ouvrir un morceau → l'adresse devient `?morceau=…` et l'onglet prend son titre ; bouton « retour » du navigateur → la partition se referme ; ouvrir directement `/?morceau=a-night-in-tunisia-6` (y compris sur mobile) → le morceau s'affiche ; « ← Retour » mobile après un lien direct → liste ; largeur 375 px → pas de débordement horizontal ; navigation au clavier dans la liste (Tab puis Entrée).*
+*Ajouts du 2026-11-14 (vérifiés en local) : ouvrir un morceau → l'adresse devient `?morceau=…` et l'onglet prend son titre ; bouton « retour » du navigateur → la partition se referme ; ouvrir directement `/?morceau=a-night-in-tunisia-6` (y compris sur mobile) → le morceau s'affiche ; « ← Retour » mobile après un lien direct → liste ; largeur 375 px → pas de débordement horizontal ; navigation au clavier dans la liste (Tab puis Entrée). Lot 2 : pastille « Bb » → 51 morceaux ; ☆ sur la partition → étoile dans la liste et onglet « ★ Favoris 1 » ; « Récents » liste les morceaux ouverts ; « ☾ Mode scène » → interface sombre et partition inversée, choix conservé au rechargement ; mobile : ☆ et ☾ dans l'en-tête de la visionneuse, pas de débordement à 375 px.*
 
 - [ ] Recherche : taper moins de 3 caractères affiche toujours tous les résultats (comportement actuel — vérifier que c'est voulu).
 - [ ] Recherche par tonalité `(Bb)` filtre exactement sur les partitions en `Bb`, insensible à la casse.

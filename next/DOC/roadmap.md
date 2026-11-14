@@ -1,6 +1,6 @@
 # Roadmap
 
-*Dernière mise à jour par l'agent : 2026-11-14 23:10*
+*Dernière mise à jour par l'agent : 2026-11-14 23:17*
 
 **Règle d'entretien : ajouter une ligne dans "Historique" à chaque évolution livrée, et déplacer une idée de "Pistes identifiées" vers "Historique" (ou la retirer si abandonnée) dès qu'elle est faite.**
 
@@ -34,16 +34,17 @@
 | 2026-11-14 | Domaine de production `real-book-patphiletas.vercel.app` de nouveau à jour (auto-assignation réactivée + Promote par Patrice) — remplace la décision de septembre de le laisser de côté |
 | 2026-11-14 | **Lot 1 « fiabilité »** : adresse par morceau (`?morceau=<titre>-<id>`, `lib/morceauUrl.ts`, retour navigateur, titre d'onglet), états de chargement/erreur de la liste avec « Réessayer », liste en boutons accessibles au clavier, champ de recherche étiqueté et qui ne déborde plus sur mobile, zone `<main>` ; correction des 7 erreurs ESLint existantes ; CI complétée (lint + `next typegen` + `tsc`) ; 50 tests |
 
+| 2026-11-14 | **Lot 2 « usage musicien »** : pastilles de tonalité (`tonalitesDisponibles`, filtre combinable avec la recherche), favoris et récents en `localStorage` (`lib/bibliotheque.ts`, `lib/stockage.ts`, onglets Tous / Favoris / Récents, étoile sur la partition), mode scène (palette Tailwind stone/amber/white/red redéfinie sous `[data-theme="dark"]`, partition inversée par filtre CSS, script anti-flash dans `app/layout.tsx`) ; 62 tests |
+
 ## Pistes identifiées pendant la migration (non faites)
 
 Notées au fil de l'eau, à confirmer avant de les faire — détail et avis dans `DOC/features.md`.
 
-- **Filtres avancés en UI** (tonalité, catégorie) — la donnée existe déjà en base, juste pas exposée en filtre (`DOC/features.md` #1, #5).
-- **Favoris / dernières partitions consultées** — `localStorage`, pas de nouvelle table (`DOC/features.md` #2).
+- **Filtre par catégorie / style** — la tonalité est faite (2026-11-14), la catégorie reste à exposer (`DOC/features.md` #5).
 - **Playlists / sets** pour préparer un concert — déjà en roadmap avant la migration, toujours pas fait (`DOC/features.md` #10).
 - **Authentification** (déjà en roadmap avant la migration) — analysé et jugé non prioritaire tant qu'un seul éditeur (`DOC/features.md` #7).
 - **PWA + cache offline des PDF** — pertinent pour un usage terrain (répétition/concert sans réseau fiable) (`DOC/features.md` #8).
-- **Mode scène** (mode nuit avec partition inversée pour jouer dans la pénombre), filtres par tonalité en pastilles, démo vidéo pour le portfolio — proposés le 2026-11-14 (lot 2).
+- **Démo vidéo pour le portfolio** (même script que « On sort ? »), **setlists**, **PWA hors ligne** — lot 3 proposé le 2026-11-14.
 
 ## Décisions prises pendant la migration (2026-09-01)
 

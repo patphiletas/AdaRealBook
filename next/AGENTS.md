@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # AGENTS.md — AdaRealBook
 
-*Dernière mise à jour par l'agent : 2026-11-14 23:10*
+*Dernière mise à jour par l'agent : 2026-11-14 23:17*
 
 Instructions pour tout agent IA (Claude Code ou autre) qui travaille sur ce projet. Cette documentation est le principal moyen de garder trace de ce qui a été fait, pourquoi, et où en est le projet — à traiter comme une exigence du projet, pas comme un à-côté optionnel.
 
@@ -64,6 +64,12 @@ Si un changement touche plusieurs catégories à la fois, mettre à jour tous le
 - Un morceau ouvert = `?morceau=<slug-du-titre>-<id>` (`lib/morceauUrl.ts`). Seul l'**identifiant final** compte à la lecture : un lien reste valide si le titre est modifié.
 - Toujours passer par `ouvrirMorceau()` (pushState) / `fermerMorceau()` / `changerMorceau()` dans `app/page.tsx` — ne pas appeler `setSelected` directement, sinon l'adresse, l'historique et la remise à zéro de la vue (zoom, fiche IA) se désynchronisent.
 - Pas de `useSearchParams` de Next : l'adresse est lue/écrite avec `window.location` / `history`, la page étant entièrement client.
+
+## Favoris, récents, mode scène (2026-11-14)
+
+- Stockage navigateur uniquement (`localStorage`, clés `realbook:favoris`, `realbook:recents`, `realbook:theme`), lu avec `useSyncExternalStore` via `lib/stockage.ts` (abonnement + `ecrireStockage` qui notifie). Ne pas lire `localStorage` dans un `useState` initial ni dans un effet : écart d'hydratation ou règle `set-state-in-effect`.
+- Logique pure (testée) dans `lib/bibliotheque.ts` ; onglets via `listeSelonVue()` et tonalité via le 3ᵉ argument de `filterPartitions()`.
+- Mode scène : `data-theme="dark"` sur `<html>`, posé avant l'affichage par le script de `app/layout.tsx` (`suppressHydrationWarning` sur `<html>`). Le thème **redéfinit les couleurs Tailwind** utilisées (`--color-stone-*`, `--color-amber-*`, `--color-white`, `--color-red-*`) dans `app/globals.css` : les composants gardent leurs classes. Toute nouvelle couleur doit venir de ces palettes ou des variables `--ada-*` (dégradés `--ada-fond`, `--ada-entete`, `--ada-fiche`), sinon elle ne s'inversera pas. La partition est inversée par `filter: invert(0.9) hue-rotate(180deg)` sur `.react-pdf__Page__canvas`. `styles/PdfViewer.css` a son bloc `[data-theme="dark"]` ; `MobileViewer.css` était déjà sombre.
 
 ## Pièges déjà rencontrés — ne pas y retomber
 

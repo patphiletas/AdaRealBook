@@ -152,3 +152,50 @@
   color: #ef4444;
   font-size: 0.875rem;
 }
+
+
+/* Mode scène (voir app/globals.css) */
+[data-theme="dark"] .pdfviewer-empty {
+  background: linear-gradient(180deg, #1a1714 0%, #14110f 100%);
+  color: #b9afa4;
+}
+[data-theme="dark"] .pdfviewer-empty-image {
+  filter: grayscale(100%) invert(1) contrast(0.9);
+}
+[data-theme="dark"] .pdfviewer-empty-card {
+  background: rgba(31, 27, 23, 0.8);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .pdfviewer-empty-kicker {
+  color: #b9afa4;
+}
+[data-theme="dark"] .pdfviewer-empty-text {
+  color: #f2ece2;
+}
+[data-theme="dark"] .pdfviewer-toolbar {
+  background: #1f1b17;
+  border-bottom-color: #3a332c;
+}
+[data-theme="dark"] .pdfviewer-button {
+  background: #2b2520;
+  color: #f2ece2;
+}
+[data-theme="dark"] .pdfviewer-button:hover {
+  background: #3a322b;
+}
+[data-theme="dark"] .pdfviewer-button-reset,
+[data-theme="dark"] .pdfviewer-scale,
+[data-theme="dark"] .pdfviewer-loading {
+  color: #b9afa4;
+}
+[data-theme="dark"] .pdfviewer-button-action {
+  background: #4a3424;
+  color: #f8dcc0;
+  border-color: #6b4a32;
+}
+[data-theme="dark"] .pdfviewer-button-action:hover {
+  background: #5a3f2c;
+}
+[data-theme="dark"] .pdfviewer-scroll {
+  background: #0f0d0c;
+}
