@@ -1,6 +1,6 @@
 # Roadmap
 
-*Dernière mise à jour par l'agent : 2026-09-01 23:04*
+*Dernière mise à jour par l'agent : 2026-11-14 23:10*
 
 **Règle d'entretien : ajouter une ligne dans "Historique" à chaque évolution livrée, et déplacer une idée de "Pistes identifiées" vers "Historique" (ou la retirer si abandonnée) dès qu'elle est faite.**
 
@@ -30,6 +30,10 @@
 | 2026-09-01 | Refacto de suivi : nom de fichier de téléchargement uniformisé (desktop/mobile), CI GitHub Actions ajoutée (build + tests sur chaque push/PR), et **suppression définitive de `front/`, `back/` et du `vercel.json` racine** — `next/` est désormais l'unique contenu du dépôt |
 | 2026-09-01 | Refacto de suivi (suite) : wrapper `withErrorHandling` appliqué aux 4 routes (fin du pattern try/catch répété) — a permis de corriger `GET /api/sync` qui renvoyait toujours 200 même en cas d'échec réel ; validation centralisée (`lib/validation.ts`) remplaçant les vérifications dupliquées entre les routes — 33 tests unitaires au total |
 
+| 2026-11-14 | `/api/sync` passe en `POST` avec le mot de passe dans le corps JSON (plus dans l'URL) ; 41 tests |
+| 2026-11-14 | Domaine de production `real-book-patphiletas.vercel.app` de nouveau à jour (auto-assignation réactivée + Promote par Patrice) — remplace la décision de septembre de le laisser de côté |
+| 2026-11-14 | **Lot 1 « fiabilité »** : adresse par morceau (`?morceau=<titre>-<id>`, `lib/morceauUrl.ts`, retour navigateur, titre d'onglet), états de chargement/erreur de la liste avec « Réessayer », liste en boutons accessibles au clavier, champ de recherche étiqueté et qui ne déborde plus sur mobile, zone `<main>` ; correction des 7 erreurs ESLint existantes ; CI complétée (lint + `next typegen` + `tsc`) ; 50 tests |
+
 ## Pistes identifiées pendant la migration (non faites)
 
 Notées au fil de l'eau, à confirmer avant de les faire — détail et avis dans `DOC/features.md`.
@@ -39,7 +43,7 @@ Notées au fil de l'eau, à confirmer avant de les faire — détail et avis dan
 - **Playlists / sets** pour préparer un concert — déjà en roadmap avant la migration, toujours pas fait (`DOC/features.md` #10).
 - **Authentification** (déjà en roadmap avant la migration) — analysé et jugé non prioritaire tant qu'un seul éditeur (`DOC/features.md` #7).
 - **PWA + cache offline des PDF** — pertinent pour un usage terrain (répétition/concert sans réseau fiable) (`DOC/features.md` #8).
-- **Protection de `/api/sync` et limite sur `/api/ai/song-insight`** — le point de sécurité le plus simple et le plus rentable identifié pendant l'audit (`DOC/securite.md`, `DOC/features.md` #12).
+- **Mode scène** (mode nuit avec partition inversée pour jouer dans la pénombre), filtres par tonalité en pastilles, démo vidéo pour le portfolio — proposés le 2026-11-14 (lot 2).
 
 ## Décisions prises pendant la migration (2026-09-01)
 
@@ -47,4 +51,4 @@ Notées au fil de l'eau, à confirmer avant de les faire — détail et avis dan
 - **Sync manuelle plutôt que cron** : décision explicite de Patrice, pour rester sur le plan Vercel Hobby (cron limité à une exécution/jour) sans complexifier.
 - **`front/`/`back/` conservés en parallèle** le temps de valider `next/`, supprimés le 2026-09-01 une fois la migration jugée stable en production (voir historique ci-dessus).
 - **URL de production inchangée** : bascule faite sur le même projet Vercel (`real-book`) et le même domaine que l'ancien front, pas de nouveau projet ni de changement d'URL pour les liens déjà partagés (CV).
-- **Domaine `real-book-patphiletas.vercel.app` (sans "-projects") laissé de côté** : resté figé sur un très vieux déploiement malgré plusieurs tentatives de correction (Refresh, edit d'assignation, remove+re-add) — non prioritaire une fois confirmé que ce n'est pas l'URL réellement utilisée (`real-book-patphiletas-projects.vercel.app`, avec "-projects", est la bonne). Détail dans `DOC/error.md` #4.
+- *(Décision dépassée le 2026-11-14 : le domaine sans « -projects » est de nouveau le domaine de production, voir l'historique.)* **Domaine `real-book-patphiletas.vercel.app` (sans "-projects") laissé de côté** : resté figé sur un très vieux déploiement malgré plusieurs tentatives de correction (Refresh, edit d'assignation, remove+re-add) — non prioritaire une fois confirmé que ce n'est pas l'URL réellement utilisée (`real-book-patphiletas-projects.vercel.app`, avec "-projects", est la bonne). Détail dans `DOC/error.md` #4.

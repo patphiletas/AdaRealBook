@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # AGENTS.md — AdaRealBook
 
-*Dernière mise à jour par l'agent : 2026-09-01 23:04*
+*Dernière mise à jour par l'agent : 2026-11-14 23:10*
 
 Instructions pour tout agent IA (Claude Code ou autre) qui travaille sur ce projet. Cette documentation est le principal moyen de garder trace de ce qui a été fait, pourquoi, et où en est le projet — à traiter comme une exigence du projet, pas comme un à-côté optionnel.
 
@@ -59,6 +59,12 @@ Si un changement touche plusieurs catégories à la fois, mettre à jour tous le
 - **Requêtes SQL** : toujours via les template strings taguées de `postgres` (`sql\`...\``), jamais de concaténation de chaîne — c'est ce qui protège contre l'injection SQL (voir `DOC/securite.md`).
 - **Variables d'environnement** : toutes server-only (pas de préfixe `NEXT_PUBLIC_`), utilisées uniquement dans `lib/` et les route handlers — jamais exposées au client. Cohérent entre `.env.local` (dev) et Vercel (prod/preview), mais **les deux sont indépendants** : ajouter une variable dans l'un ne l'ajoute pas à l'autre.
 
+## Adresse par morceau (2026-11-14)
+
+- Un morceau ouvert = `?morceau=<slug-du-titre>-<id>` (`lib/morceauUrl.ts`). Seul l'**identifiant final** compte à la lecture : un lien reste valide si le titre est modifié.
+- Toujours passer par `ouvrirMorceau()` (pushState) / `fermerMorceau()` / `changerMorceau()` dans `app/page.tsx` — ne pas appeler `setSelected` directement, sinon l'adresse, l'historique et la remise à zéro de la vue (zoom, fiche IA) se désynchronisent.
+- Pas de `useSearchParams` de Next : l'adresse est lue/écrite avec `window.location` / `history`, la page étant entièrement client.
+
 ## Pièges déjà rencontrés — ne pas y retomber
 
 Détail complet dans `DOC/error.md`, résumé ici :
@@ -67,7 +73,7 @@ Détail complet dans `DOC/error.md`, résumé ici :
 2. **`NODE_ENV=production` dans l'environnement shell local** fait sauter les devDependencies à l'installation (`npm install` seul n'installe pas `tailwindcss`/`typescript`/`eslint`). Utiliser `npm install --include=dev` en local si ce cas se reproduit.
 3. **Turbopack + cache stale** : après un changement de config (`next.config.ts`, `postcss.config.mjs`), si une erreur de module manquant apparaît alors que le package est bien installé, `rm -rf .next` avant de relancer le build.
 4. **Vercel — Framework Preset et Output Directory hérités de l'ancien projet Vite** : lors de la bascule, le projet Vercel `real-book` avait encore `Framework Preset: Other` + `Output Directory: dist` (réglages de l'ancien front Vite) après changement du Root Directory vers `next`. Résultat : build Next.js réussi dans les logs, mais déploiement vide (404 sur toutes les routes) car Vercel cherchait le résultat dans `dist/` au lieu du build Next réel. Toujours vérifier **Framework Preset = Next.js** et **désactiver l'override Output Directory** après un changement de Root Directory sur un projet Vercel préexistant.
-5. **Domaine Vercel figé sur un vieux déploiement** : le domaine personnalisé `real-book-patphiletas.vercel.app` est resté épinglé sur le tout premier déploiement du projet (jamais résolu même après Refresh / Remove+Add — cause exacte non identifiée, probablement un alias posé via `vercel alias` avant l'existence de l'UI Domains actuelle). Non bloquant : ce n'est pas l'URL réellement utilisée (voir `DOC/roadmap.md`), mais à garder en tête si ce domaine doit un jour être réactivé.
+5. **Domaine Vercel figé sur un vieux déploiement** *(résolu le 2026-11-14, voir `DOC/error.md` #5)* : le domaine personnalisé `real-book-patphiletas.vercel.app` est resté épinglé sur le tout premier déploiement du projet (jamais résolu même après Refresh / Remove+Add — cause exacte non identifiée, probablement un alias posé via `vercel alias` avant l'existence de l'UI Domains actuelle). Non bloquant : ce n'est pas l'URL réellement utilisée (voir `DOC/roadmap.md`), mais à garder en tête si ce domaine doit un jour être réactivé.
 6. **Sync Cloudinary manuelle, par choix explicite** : `/api/sync` n'est déclenchée qu'à la main (pas de cron), décision prise avec Patrice le 2026-09-01 pour rester sur le plan Vercel Hobby sans complexifier. Ne pas ajouter de cron sans lui redemander.
 
 ## Comment lancer / vérifier le projet
@@ -79,7 +85,7 @@ npm run build      # à faire systématiquement avant de dire qu'un changement e
 npm test           # tests unitaires (Vitest)
 ```
 
-**CI** : `.github/workflows/ci.yml` (à la racine du dépôt) lance `npm ci && npm run build && npm test` dans `next/` sur chaque push/PR vers `main` — aucune variable d'environnement requise (le build n'exécute aucun appel réseau réel).
+**CI** : `.github/workflows/ci.yml` (à la racine du dépôt) lance `npm ci`, `npm run lint`, `npx next typegen && npx tsc --noEmit`, `npm test` puis `npm run build` dans `next/` (lint et types ajoutés le 2026-11-14 — garder `npm run lint` à 0 erreur) sur chaque push/PR vers `main` — aucune variable d'environnement requise (le build n'exécute aucun appel réseau réel).
 
 Des tests unitaires existent (`npm test`, voir `DOC/test.md`), mais aucun test d'intégration ni end-to-end automatisé. Toute vérification fonctionnelle sur les routes API et le parcours UI complet passe par des smoke tests manuels (`curl`, navigation réelle) — voir `DOC/test.md` pour la checklist et le plan de tests proposé.
 

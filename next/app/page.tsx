@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useSyncExternalStore } from "react";
 import dynamic from "next/dynamic";
 import SearchList from "@/components/SearchList";
 import EditMetadataDialog from "@/components/EditMetadataDialog";
 
-import type { Partition, SongInsight } from "@/types/interface";
+import { morceauDepuisUrl, slugMorceau } from "@/lib/morceauUrl";
+import type { EtatListe, Partition, SongInsight } from "@/types/interface";
 
 const PdfViewer = dynamic(() => import("@/components/PdfViewer"), { ssr: false });
 const MobileViewer = dynamic(() => import("@/components/MobileViewer"), { ssr: false });
@@ -13,26 +14,92 @@ const MobileViewer = dynamic(() => import("@/components/MobileViewer"), { ssr: f
 const CLOUDINARY_BASE = "https://res.cloudinary.com/dpnudoyxb/image/upload";
 const MOBILE_BREAKPOINT = 860;
 
+// Largeur de la fenêtre lue sans setState dans un effet (abonnement à « resize »).
+function abonnerResize(rappel: () => void) {
+  window.addEventListener("resize", rappel);
+  return () => window.removeEventListener("resize", rappel);
+}
+const lireLargeur = () => window.innerWidth;
+const largeurServeur = () => 1280;
+
 export default function Home() {
   const [partitions, setPartitions] = useState<Partition[]>([]);
+  const [etatListe, setEtatListe] = useState<EtatListe>("chargement");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Partition | null>(null);
   const [numPages, setNumPages] = useState(0);
   const [scale, setScale] = useState(1);
-  const [pdfWidth, setPdfWidth] = useState(600);
-  const [isMobile, setIsMobile] = useState(false);
+
+  const largeur = useSyncExternalStore(abonnerResize, lireLargeur, largeurServeur);
+  const isMobile = largeur < MOBILE_BREAKPOINT;
+  const pdfWidth = isMobile ? largeur - 32 : Math.floor(largeur * 0.66 - 48);
 
   const [insight, setInsight] = useState<SongInsight | null>(null);
   const [insightLoading, setInsightLoading] = useState(false);
   const [insightError, setInsightError] = useState<string | null>(null);
   const [insightOpen, setInsightOpen] = useState(false);
 
-  useEffect(() => {
-    fetch("/api/partitions")
-      .then(res => res.json())
-      .then(data => setPartitions(data))
-      .catch(err => console.error("Erreur :", err));
+  // Change de morceau en remettant à zéro la vue (pages, zoom, fiche IA).
+  const changerMorceau = useCallback((p: Partition | null) => {
+    setSelected(p);
+    setNumPages(0);
+    setScale(1);
+    setInsight(null);
+    setInsightError(null);
+    setInsightLoading(false);
+    setInsightOpen(false);
   }, []);
+
+  // Chargement de la liste, avec état visible (chargement / erreur / prête)
+  const chargerPartitions = useCallback(async () => {
+    setEtatListe("chargement");
+    try {
+      const res = await fetch("/api/partitions");
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data: Partition[] = await res.json();
+      setPartitions(data);
+      setEtatListe("prete");
+      // Lien direct vers un morceau : ?morceau=a-night-in-tunisia-42
+      changerMorceau(morceauDepuisUrl(window.location.search, data));
+    } catch (err) {
+      console.error("Erreur :", err);
+      setEtatListe("erreur");
+    }
+  }, [changerMorceau]);
+
+  useEffect(() => {
+    // Premier chargement : l'état passe à « prête » ou « erreur » une fois la réponse reçue.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    chargerPartitions();
+  }, [chargerPartitions]);
+
+  // Ouvrir un morceau ajoute une entrée d'historique : le bouton « retour » le referme.
+  const ouvrirMorceau = useCallback(
+    (p: Partition) => {
+      if (selected?.id === p.id) return;
+      window.history.pushState({ morceau: p.id }, "", `?morceau=${slugMorceau(p)}`);
+      changerMorceau(p);
+    },
+    [selected, changerMorceau]
+  );
+
+  const fermerMorceau = useCallback(() => {
+    if (window.history.state?.morceau) window.history.back();
+    else {
+      window.history.replaceState(null, "", window.location.pathname);
+      changerMorceau(null);
+    }
+  }, [changerMorceau]);
+
+  useEffect(() => {
+    const surRetour = () => changerMorceau(morceauDepuisUrl(window.location.search, partitions));
+    window.addEventListener("popstate", surRetour);
+    return () => window.removeEventListener("popstate", surRetour);
+  }, [partitions, changerMorceau]);
+
+  useEffect(() => {
+    document.title = selected ? `${selected.title} — My Real Book` : "My Real Book — partitions de jazz";
+  }, [selected]);
 
   const handleGenerateInsight = useCallback(async () => {
     if (!selected) return;
@@ -78,28 +145,9 @@ export default function Home() {
   const handlePartitionUpdated = useCallback((updated: Partition) => {
     setPartitions(prev => prev.map(p => p.id === updated.id ? updated : p));
     setSelected(updated);
+    // Le titre a pu changer : l'adresse suit (même identifiant)
+    window.history.replaceState(window.history.state, "", `?morceau=${slugMorceau(updated)}`);
   }, []);
-
-  const updateLayout = useCallback(() => {
-    const w = window.innerWidth;
-    setIsMobile(w < MOBILE_BREAKPOINT);
-    setPdfWidth(w < MOBILE_BREAKPOINT ? w - 32 : Math.floor(w * 0.66 - 48));
-  }, []);
-
-  useEffect(() => {
-    updateLayout();
-    window.addEventListener("resize", updateLayout);
-    return () => window.removeEventListener("resize", updateLayout);
-  }, [updateLayout]);
-
-  useEffect(() => {
-    setNumPages(0);
-    setScale(1);
-    setInsight(null);
-    setInsightError(null);
-    setInsightLoading(false);
-    setInsightOpen(false);
-  }, [selected]);
 
   const pdfUrl = selected ? `${CLOUDINARY_BASE}/${selected.name_pdf}.pdf` : null;
 
@@ -110,6 +158,7 @@ export default function Home() {
   if (isMobile && selected) {
     return (
       <>
+        <main className="contents">
         <MobileViewer
           partition={selected}
           pdfUrl={pdfUrl!}
@@ -120,11 +169,12 @@ export default function Home() {
           onZoomIn={zoomIn}
           onZoomOut={zoomOut}
           onZoomReset={zoomReset}
-          onBack={() => setSelected(null)}
+          onBack={fermerMorceau}
           insightLoading={insightLoading}
           onOpenInsight={handleOpenInsight}
           onPartitionUpdated={handlePartitionUpdated}
         />
+        </main>
         {insightOpen && (
           <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-6">
             <div className="w-full sm:max-w-2xl sm:rounded-2xl rounded-t-2xl border border-amber-200/50 bg-[linear-gradient(145deg,#fffdf7_0%,#fff6ea_45%,#fbe9d7_100%)] shadow-2xl">
@@ -243,14 +293,16 @@ export default function Home() {
         </div>
       </header>
 
-      <div className="flex flex-1 min-h-0">
+      <main className="flex flex-1 min-h-0">
         {isMobile ? (
           <SearchList
             partitions={partitions}
             search={search}
             onSearchChange={setSearch}
             selected={selected}
-            onSelect={setSelected}
+            onSelect={ouvrirMorceau}
+            etat={etatListe}
+            onReessayer={chargerPartitions}
             fullWidth
           />
         ) : (
@@ -260,7 +312,9 @@ export default function Home() {
               search={search}
               onSearchChange={setSearch}
               selected={selected}
-              onSelect={setSelected}
+              onSelect={ouvrirMorceau}
+              etat={etatListe}
+              onReessayer={chargerPartitions}
             />
             <PdfViewer
               pdfUrl={pdfUrl}
@@ -275,7 +329,7 @@ export default function Home() {
             />
           </>
         )}
-      </div>
+      </main>
       {selected && insightOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-6">
           <div className="w-full max-w-2xl rounded-2xl border border-amber-200/50 bg-[linear-gradient(145deg,#fffdf7_0%,#fff6ea_45%,#fbe9d7_100%)] shadow-2xl">

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AdaRealBook",
+  title: "My Real Book — partitions de jazz",
   description: "Une bibliothèque de partitions jazz, façon Real Book.",
 };
 

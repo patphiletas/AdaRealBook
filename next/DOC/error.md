@@ -1,6 +1,6 @@
 # Journal des bugs
 
-*Dernière mise à jour par l'agent : 2026-09-01 22:45*
+*Dernière mise à jour par l'agent : 2026-11-14 23:10*
 
 Chaque bug/blocage rencontré pendant la migration Express+Vite → Next.js, sa cause réelle, et comment il a été résolu. But : ne pas retomber deux fois dans le même piège.
 
@@ -57,7 +57,8 @@ Chaque bug/blocage rencontré pendant la migration Express+Vite → Next.js, sa 
 - **Date** : 2026-09-01
 - **Symptôme** : après la bascule en production, l'alias auto-généré `real-book-patphiletas-projects.vercel.app` servait bien la nouvelle app Next.js, mais le domaine personnalisé `real-book-patphiletas.vercel.app` (sans "-projects") continuait de servir l'**ancien** front Vite (titre `book.json`, `vite.svg`), malgré un cache-busting explicite.
 - **Cause exacte non identifiée avec certitude.** Le domaine était configuré dans l'UI Domains comme "Connect to an environment → Production" (réglage a priori correct), mais une requête directe sur le déploiement associé à ce domaine (via l'API Vercel) résolvait systématiquement vers le tout premier déploiement jamais fait sur ce projet (`createdAt` remontant à la création initiale). Ni un "Refresh", ni une édition de l'assignation suivie de "Save", ni un "Remove" + "Add Existing" n'ont changé ce comportement. Hypothèse la plus probable : un alias posé très tôt via la CLI Vercel (`vercel alias set`), qui crée un enregistrement de bas niveau indépendant de l'UI "Domains" actuelle et n'est pas affecté par les actions de cette UI.
-- **Résolution** : **non résolue techniquement**, mais sans conséquence — vérification faite avec Patrice que l'URL réellement utilisée (CV, partage) est `real-book-patphiletas-projects.vercel.app` (avec "-projects"), qui fonctionne correctement. Le domaine cassé (`real-book-patphiletas.vercel.app`, sans "-projects") n'est pas utilisé ; une redirection vers l'URL fonctionnelle a été proposée comme filet de sécurité pour d'éventuels anciens liens, à faire à la discrétion de Patrice.
+- **Mise à jour 2026-11-14** : résolu — Patrice a réactivé l'auto-assignation des domaines de production et promu le dernier déploiement ; `real-book-patphiletas.vercel.app` suit de nouveau chaque push.
+- **Résolution (2026-09-01)** : **non résolue techniquement**, mais sans conséquence — vérification faite avec Patrice que l'URL réellement utilisée (CV, partage) est `real-book-patphiletas-projects.vercel.app` (avec "-projects"), qui fonctionne correctement. Le domaine cassé (`real-book-patphiletas.vercel.app`, sans "-projects") n'est pas utilisé ; une redirection vers l'URL fonctionnelle a été proposée comme filet de sécurité pour d'éventuels anciens liens, à faire à la discrétion de Patrice.
 - **Fichier** : aucun (configuration Vercel).
 - **Leçon générale** : sur un projet Vercel ancien (renommé ou reconfiguré plusieurs fois), toujours vérifier **quelle URL est réellement utilisée en pratique** avant de chercher à réparer un domaine qui semble cassé — plusieurs alias auto-générés peuvent coexister (`<nom>-<compte>.vercel.app`, `<nom>-<compte>-projects.vercel.app`, alias legacy d'un ancien nom de projet), et tous ne sont pas forcément vivants ou pertinents.
 
@@ -94,6 +95,25 @@ Chaque bug/blocage rencontré pendant la migration Express+Vite → Next.js, sa 
 - **Résolution** : `lib/downloadFile.ts` récupère le PDF via `fetch()` (Cloudinary renvoie `Access-Control-Allow-Origin: *`, donc pas de blocage CORS), construit une URL `blob:` locale (**same-origin** par nature) à partir du résultat, puis déclenche le téléchargement sur cette URL — l'attribut `download` est alors honoré normalement. Repli sur `window.open` si le `fetch` échoue (ex: hors ligne).
 - **Fichiers** : `lib/downloadFile.ts` (nouveau), `components/PdfViewer.tsx`, `components/MobileViewer.tsx`.
 - **Leçon générale** : un changement de code qui "a l'air correct" et qui **build sans erreur** n'est pas la même chose qu'un changement **vérifié en conditions réelles** — ici, seul un test qui observe le comportement navigateur réel (l'événement `download` et son nom de fichier suggéré, pas juste l'absence d'erreur) a permis de détecter que le premier correctif ne changeait rien en pratique. À reproduire : pour tout comportement de téléchargement/nom de fichier, vérifier avec un outil qui capture l'événement réel plutôt que de se fier à la lecture du code seule.
+
+---
+
+## #9 — Champ de recherche coupé à droite sur mobile
+
+- **Date** : 2026-11-14
+- **Symptôme** : sur un écran de 390 px, le champ de recherche dépassait du bord droit de l'écran.
+- **Cause réelle** : la colonne de liste (élément flex) ne pouvait pas rétrécir sous la largeur minimale de son contenu (`min-width: auto` par défaut en flexbox).
+- **Résolution** : `min-w-0` sur la colonne et le champ (`components/SearchList.tsx`). Vérifié : le champ s'arrête à 362 px sur 375, la page ne déborde plus.
+- **Fichier** : `components/SearchList.tsx`
+
+---
+
+## #10 — `npm run lint` en erreur (7 erreurs), donc impossible à ajouter à la CI
+
+- **Date** : 2026-11-14
+- **Symptôme** : `react-hooks/set-state-in-effect` (3×), `react/no-unescaped-entities` (2×), `@typescript-eslint/no-explicit-any` (2×).
+- **Résolution** : largeur de fenêtre lue avec `useSyncExternalStore` (plus de `setState` dans un effet) ; remise à zéro de la vue faite dans `changerMorceau()` au moment du changement plutôt que dans un effet ; ratio de page du PDF mémorisé avec son URL (`PdfViewer.tsx`) ; guillemets français dans le message « aucun morceau » ; `unknown` + types explicites dans `lib/openai.ts`. Un seul `eslint-disable` assumé : le premier chargement de la liste dans `useEffect`.
+- **Fichiers** : `app/page.tsx`, `components/PdfViewer.tsx`, `components/SearchList.tsx`, `lib/openai.ts`, `lib/db.ts`
 
 ---
 

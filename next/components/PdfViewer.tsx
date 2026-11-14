@@ -21,7 +21,10 @@ export default function PdfViewer({
 }: PdfViewerProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
-  const [pageAspectRatio, setPageAspectRatio] = useState<number | null>(null);
+  // Ratio largeur/hauteur de la page, mémorisé avec l'URL du PDF : quand la
+  // partition change, l'ancien ratio ne s'applique plus (pas besoin d'effet).
+  const [ratioPage, setRatioPage] = useState<{ url: string | null; ratio: number } | null>(null);
+  const pageAspectRatio = ratioPage?.url === pdfUrl ? ratioPage.ratio : null;
 
   // Mesure le conteneur de scroll
   useEffect(() => {
@@ -33,11 +36,6 @@ export default function PdfViewer({
     observer.observe(scrollRef.current);
     return () => observer.disconnect();
   }, []);
-
-  // Réinitialise le ratio quand la partition change
-  useEffect(() => {
-    setPageAspectRatio(null);
-  }, [pdfUrl]);
 
   // Largeur de base pour tenir la page entière (fit-to-view)
   // min(largeur dispo, hauteur dispo * ratio) avec un peu de marge
@@ -137,7 +135,7 @@ export default function PdfViewer({
               pageNumber={i + 1}
               width={baseWidth * scale}
               onLoadSuccess={i === 0 ? (page) => {
-                setPageAspectRatio(page.originalWidth / page.originalHeight);
+                setRatioPage({ url: pdfUrl, ratio: page.originalWidth / page.originalHeight });
               } : undefined}
               className="shadow-lg mb-3 rounded overflow-hidden"
             />

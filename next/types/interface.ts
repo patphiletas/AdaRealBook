@@ -14,8 +14,12 @@ export interface SongInsight {
   anecdotes: string[];
 }
 
+export type EtatListe = "chargement" | "prete" | "erreur";
+
 export interface SearchListProps {
   partitions: Partition[];
+  etat?: EtatListe;
+  onReessayer?: () => void;
   search: string;
   onSearchChange: (value: string) => void;
   selected: Partition | null;

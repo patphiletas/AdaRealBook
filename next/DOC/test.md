@@ -1,10 +1,10 @@
 # Tests
 
-*Dernière mise à jour par l'agent : 2026-09-01 23:04*
+*Dernière mise à jour par l'agent : 2026-11-14 23:10*
 
 ## État actuel
 
-**41 tests unitaires (Vitest)** couvrent `lib/openai.ts`, `lib/filterPartitions.ts`, `lib/validation.ts` et `lib/auth.ts` (voir section 1). Aucun test d'intégration ni end-to-end automatisé n'existe encore — le reste de l'app (routes API, parcours UI complet) est vérifié par des smoke tests manuels (`curl`, navigation réelle via Playwright headless), documentés ci-dessous pour mémoire.
+**50 tests unitaires (Vitest)** couvrent `lib/openai.ts`, `lib/filterPartitions.ts`, `lib/validation.ts`, `lib/auth.ts` et `lib/morceauUrl.ts` (adresse par morceau : slug, lecture de l'identifiant, lien dont le titre a changé) (voir section 1). Aucun test d'intégration ni end-to-end automatisé n'existe encore — le reste de l'app (routes API, parcours UI complet) est vérifié par des smoke tests manuels (`curl`, navigation réelle via Playwright headless), documentés ci-dessous pour mémoire.
 
 **Commande** : `npm test` (lance `vitest run`, une seule passe, pas de mode watch).
 
@@ -59,6 +59,8 @@ Outil déjà utilisé avec succès pendant la migration : **Playwright**.
 - Vue mobile : réduction du viewport sous 860px → bascule vers `MobileViewer` → mêmes actions (zoom, édition, fiche IA) fonctionnelles.
 
 ### 4. Checklist manuelle à rejouer après tout changement touchant à l'UI ou aux routes API
+
+*Ajouts du 2026-11-14 (vérifiés en local) : ouvrir un morceau → l'adresse devient `?morceau=…` et l'onglet prend son titre ; bouton « retour » du navigateur → la partition se referme ; ouvrir directement `/?morceau=a-night-in-tunisia-6` (y compris sur mobile) → le morceau s'affiche ; « ← Retour » mobile après un lien direct → liste ; largeur 375 px → pas de débordement horizontal ; navigation au clavier dans la liste (Tab puis Entrée).*
 
 - [ ] Recherche : taper moins de 3 caractères affiche toujours tous les résultats (comportement actuel — vérifier que c'est voulu).
 - [ ] Recherche par tonalité `(Bb)` filtre exactement sur les partitions en `Bb`, insensible à la casse.

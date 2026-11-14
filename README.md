@@ -18,7 +18,7 @@
 
 </div>
 
-*Dernière mise à jour par l'agent : 2026-09-01 22:13*
+*Dernière mise à jour par l'agent : 2026-11-14 23:10*
 
 ---
 
@@ -48,6 +48,9 @@ AdaRealBook est une application web de consultation de partitions jazz, en **Nex
 | 💾 Cache IA | Les fiches générées sont stockées en BDD — affichage instantané dès la 2e ouverture |
 | ✏️ Édition | Modification des métadonnées (titre, compositeur, tonalité, catégorie) protégée par mot de passe |
 | 🔍 Fit-to-view | La partition s'affiche en entier à l'ouverture, zoom libre ensuite |
+| 🔗 Lien par morceau | Chaque morceau ouvert a sa propre adresse (`?morceau=a-night-in-tunisia-6`) : lien partageable, rechargement sans perte, bouton « retour » du navigateur qui referme la partition, titre d'onglet au nom du morceau |
+| ⏳ États | Message pendant le chargement de la liste, message d'erreur avec bouton « Réessayer » si l'API ne répond pas |
+| ⌨️ Accessibilité | Liste des morceaux utilisable au clavier (boutons, morceau courant annoncé), champ de recherche étiqueté, zone `<main>` |
 
 ---
 
@@ -70,13 +73,13 @@ AdaRealBook est une application web de consultation de partitions jazz, en **Nex
 
 ```
 AdaRealBook/
-├── .github/workflows/    # CI (build + tests sur chaque push/PR)
+├── .github/workflows/    # CI (lint, types, tests, build sur chaque push/PR)
 ├── next/                 # Le projet — voir next/README.md pour le détail
 │   ├── app/
 │   │   ├── page.tsx          # UI principale (Client Component)
 │   │   └── api/               # Route Handlers : partitions, ai/song-insight, sync
 │   ├── components/           # SearchList, PdfViewer, MobileViewer, EditMetadataDialog
-│   ├── lib/                   # db.ts, cloudinary.ts, openai.ts, pdfWorker.ts, auth.ts
+│   ├── lib/                   # db.ts, cloudinary.ts, openai.ts, pdfWorker.ts, auth.ts, morceauUrl.ts (adresse par morceau)
 │   ├── DOC/                    # Documentation détaillée (voir plus bas)
 │   └── AGENTS.md                # Instructions pour tout agent IA qui reprend ce code
 └── assets/               # Images du README
@@ -160,6 +163,7 @@ Un seul serveur, un seul port — plus de front/API séparés à lancer.
 - [x] Édition des métadonnées depuis l'interface
 - [x] Migration vers un Next.js unique (front + API), coupure du backend Express/Render
 - [x] Suppression de `front/` et `back/`, CI (build + tests sur chaque push)
+- [x] Adresse par morceau, états de chargement/erreur, accessibilité clavier, CI avec lint et vérification des types (2026-11-14)
 - [ ] Filtres avancés en UI (tonalité, catégorie) — voir [`next/DOC/features.md`](next/DOC/features.md) #1
 - [ ] Favoris / dernières partitions consultées — voir [`next/DOC/features.md`](next/DOC/features.md) #2
 - [ ] Gestion multi-volumes
@@ -178,7 +182,7 @@ Toute la documentation détaillée du projet vit dans [`next/`](next/) (le proje
 |---|---|
 | [next/AGENTS.md](next/AGENTS.md) | Instructions pour tout agent IA (Claude ou autre) qui reprend ce projet |
 | [next/DOC/error.md](next/DOC/error.md) | Historique des bugs/blocages rencontrés (dont la migration Vercel) et leur résolution |
-| [next/DOC/test.md](next/DOC/test.md) | État des tests (21 tests unitaires Vitest), checklist manuelle, plan de tests pour la suite |
+| [next/DOC/test.md](next/DOC/test.md) | État des tests (50 tests unitaires Vitest), checklist manuelle, plan de tests pour la suite |
 | [next/DOC/roadmap.md](next/DOC/roadmap.md) | Historique des évolutions + pistes identifiées |
 | [next/DOC/features.md](next/DOC/features.md) | Analyse faisabilité/difficulté/pertinence des idées d'amélioration UI/UX/technique |
 | [next/DOC/securite.md](next/DOC/securite.md) | Modèle de menace, choix et limites de sécurité |

@@ -8,12 +8,18 @@ export interface SongInsightResult {
   anecdotes: string[];
 }
 
-export function extractResponseText(responseJson: any): string {
-  if (typeof responseJson?.output_text === "string" && responseJson.output_text.trim()) {
-    return responseJson.output_text;
+type ReponseOpenAI = {
+  output_text?: unknown;
+  output?: Array<{ content?: Array<{ type?: unknown; text?: unknown }> }>;
+};
+
+export function extractResponseText(responseJson: unknown): string {
+  const reponse = (responseJson ?? {}) as ReponseOpenAI;
+  if (typeof reponse.output_text === "string" && reponse.output_text.trim()) {
+    return reponse.output_text;
   }
   const chunks: string[] = [];
-  const outputs = Array.isArray(responseJson?.output) ? responseJson.output : [];
+  const outputs = Array.isArray(reponse.output) ? reponse.output : [];
   for (const outputItem of outputs) {
     const content = Array.isArray(outputItem?.content) ? outputItem.content : [];
     for (const contentItem of content) {
@@ -25,11 +31,12 @@ export function extractResponseText(responseJson: any): string {
   return chunks.join("\n").trim();
 }
 
-export function normalizeInsight(data: any): SongInsightResult | null {
-  const composerWord = typeof data?.composerWord === "string" ? data.composerWord.trim() : "";
-  const tonalite = typeof data?.tonalite === "string" ? data.tonalite.trim() : "";
-  const grille = typeof data?.grille === "string" ? data.grille.trim() : "";
-  const anecdotesRaw = Array.isArray(data?.anecdotes) ? data.anecdotes : [];
+export function normalizeInsight(data: unknown): SongInsightResult | null {
+  const d = (data && typeof data === "object" ? data : {}) as Record<string, unknown>;
+  const composerWord = typeof d.composerWord === "string" ? d.composerWord.trim() : "";
+  const tonalite = typeof d.tonalite === "string" ? d.tonalite.trim() : "";
+  const grille = typeof d.grille === "string" ? d.grille.trim() : "";
+  const anecdotesRaw: unknown[] = Array.isArray(d.anecdotes) ? d.anecdotes : [];
 
   const anecdotes = anecdotesRaw
     .filter((item: unknown) => typeof item === "string")

@@ -1,6 +1,6 @@
 # Refactoring
 
-*Dernière mise à jour par l'agent : 2026-09-01 23:04*
+*Dernière mise à jour par l'agent : 2026-11-14 23:10*
 
 Dette technique identifiée pendant la migration Express+Vite → Next.js — ce qui a déjà été nettoyé au passage, et ce qui reste en suspens.
 
@@ -25,6 +25,8 @@ Dette technique identifiée pendant la migration Express+Vite → Next.js — ce
 | 2026-09-01 | Suppression de `front/` (ancien front Vite) et `back/` (ancien backend Express/Render) du dépôt, ainsi que du `vercel.json` racine (rewrite SPA de l'ancien front, sans effet depuis que le Root Directory Vercel est `next`) — migration jugée stable en production, historique conservé dans `DOC/roadmap.md` et l'historique git |
 | 2026-09-01 | Wrapper générique `withErrorHandling` (`lib/withErrorHandling.ts`) appliqué aux 4 routes — remplace le pattern `try/catch` répété par un export `withErrorHandling(handler, message?)`. A permis de corriger dans la foulée `GET /api/sync` : `syncPartitions()` (`lib/cloudinary.ts`) relance désormais l'erreur au lieu de l'avaler après l'avoir loguée, donc un échec réel de synchro renvoie enfin un statut 500 exploitable au lieu d'un 200 trompeur |
 | 2026-09-01 | Validation centralisée (`lib/validation.ts`, `validatePartitionInput`/`isValidPartitionId`) — remplace les vérifications manuelles dupliquées entre `PUT /api/partitions/[id]` et `POST /api/ai/song-insight` par des fonctions pures, testées unitairement (12 tests, voir `DOC/test.md`) |
+
+- 2026-11-14 : `app/page.tsx` — logique de sélection centralisée (`changerMorceau`, `ouvrirMorceau`, `fermerMorceau`), largeur de fenêtre via `useSyncExternalStore`, plus de `setState` dans des effets ; CI complétée (lint + types). Reste lourd (~400 lignes, deux copies de la modale « fiche IA » desktop/mobile) : extraire un composant `InsightDialog` serait la prochaine étape.
 
 ## À faire
 
