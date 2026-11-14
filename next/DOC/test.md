@@ -4,7 +4,7 @@
 
 ## État actuel
 
-**33 tests unitaires (Vitest)** couvrent `lib/openai.ts`, `lib/filterPartitions.ts` et `lib/validation.ts` (voir section 1). Aucun test d'intégration ni end-to-end automatisé n'existe encore — le reste de l'app (routes API, parcours UI complet) est vérifié par des smoke tests manuels (`curl`, navigation réelle via Playwright headless), documentés ci-dessous pour mémoire.
+**41 tests unitaires (Vitest)** couvrent `lib/openai.ts`, `lib/filterPartitions.ts`, `lib/validation.ts` et `lib/auth.ts` (voir section 1). Aucun test d'intégration ni end-to-end automatisé n'existe encore — le reste de l'app (routes API, parcours UI complet) est vérifié par des smoke tests manuels (`curl`, navigation réelle via Playwright headless), documentés ci-dessous pour mémoire.
 
 **Commande** : `npm test` (lance `vitest run`, une seule passe, pas de mode watch).
 
@@ -18,7 +18,7 @@
 | `PUT /api/partitions/:id` accepte le bon mot de passe | `curl` | ✅ 200, partition mise à jour |
 | `POST /api/ai/song-insight` génère une fiche IA (1er appel) | `curl` | ✅ 200, ~8,5s (appel OpenAI réel) |
 | `POST /api/ai/song-insight` sert le cache DB (2e appel, même partition) | `curl` | ✅ 200, ~0,1-0,3s |
-| `GET /api/sync` synchronise Cloudinary → Postgres sans erreur | `curl` + lecture des logs `next dev` | ✅ |
+| `POST /api/sync` synchronise Cloudinary → Postgres sans erreur | `curl` + lecture des logs `next dev` | ✅ |
 | Aucune erreur de rendu SSR (`DOMMatrix`) au build | `npm run build` | ✅ après correction (voir `DOC/error.md` #1) |
 | Rendu visuel complet (liste, sélection, PDF fit-to-view, zoom) | Playwright headless (script one-off, `page.goto` + `screenshot` + `console --errors`) | ✅ aucune erreur console, capture conforme au design attendu |
 | Même vérification sur le déploiement preview Vercel | Playwright headless sur l'URL preview réelle | ✅ identique au rendu local |
@@ -47,7 +47,7 @@ Plus lourds à mettre en place (nécessitent de mocker `postgres`, `cloudinary`,
 - `GET /api/partitions` : 200 + forme de la réponse avec DB mockée ; 500 si la requête SQL échoue.
 - `PUT /api/partitions/[id]` : 403 si mot de passe absent/incorrect ; 400 si `title`/`composer` vides ; 404 si `id` inexistant ; 200 + upsert du compositeur sur succès.
 - `POST /api/ai/song-insight` : 400 si champs requis manquants ; cache hit (DB mockée avec résultat existant) ne doit **jamais** appeler `generateSongInsight` ; cache miss appelle OpenAI puis persiste le résultat ; 500 si OpenAI échoue ou renvoie un JSON invalide.
-- `GET /api/sync` : 200 avec le message de confirmation si la synchro réussit ; **500 si `syncPartitions()` échoue** (corrigé le 2026-09-01, `syncPartitions()` relance désormais l'erreur au lieu de l'avaler — voir `DOC/refacto.md`).
+- `POST /api/sync` : 200 avec le message de confirmation si la synchro réussit ; **500 si `syncPartitions()` échoue** (corrigé le 2026-09-01, `syncPartitions()` relance désormais l'erreur au lieu de l'avaler — voir `DOC/refacto.md`).
 
 ### 3. Test de bout en bout (priorité basse, le plus proche de l'usage réel)
 
@@ -68,7 +68,7 @@ Outil déjà utilisé avec succès pendant la migration : **Playwright**.
 - [ ] Édition de métadonnées : après succès, la liste de gauche reflète immédiatement le nouveau titre/compositeur sans rechargement de page.
 - [ ] Fiche IA : le bouton "Réessayer" apparaît bien en cas d'erreur et relance `handleGenerateInsight`.
 - [x] Téléchargement PDF : le nom de fichier proposé correspond au titre réel de la partition, desktop et mobile — vérifié le 2026-09-01 via Playwright (`page.waitForEvent("download")` + `suggestedFilename()`), voir `DOC/error.md` #8. À revérifier si `lib/downloadFile.ts` est modifié : un simple changement de prop ne suffit pas à le confirmer, il faut observer l'événement de téléchargement réel.
-- [ ] `GET /api/sync` : lancé deux fois de suite sur les mêmes fichiers Cloudinary, ne crée pas de doublon (upsert `ON CONFLICT` sur `name_pdf`).
+- [ ] `POST /api/sync` : lancé deux fois de suite sur les mêmes fichiers Cloudinary, ne crée pas de doublon (upsert `ON CONFLICT` sur `name_pdf`).
 
 ## Pourquoi il n'y a pas encore de tests automatisés
 

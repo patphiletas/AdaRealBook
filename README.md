@@ -142,7 +142,7 @@ Un seul serveur, un seul port — plus de front/API séparés à lancer.
 | `GET` | `/api/partitions` | Liste des partitions avec compositeur |
 | `POST` | `/api/ai/song-insight` | Fiche IA (cache BDD en priorité) |
 | `PUT` | `/api/partitions/:id` | Modifier titre / compositeur / tonalité |
-| `GET` | `/api/sync` | Déclencher une synchro Cloudinary manuellement |
+| `POST` | `/api/sync` | Déclencher une synchro Cloudinary manuellement (mot de passe dans le corps JSON : `{ "password": "…" }`) |
 
 **Payload `POST /api/ai/song-insight` :**
 ```json

@@ -2,10 +2,13 @@ import { syncPartitions } from "@/lib/cloudinary";
 import { checkEditPassword, delayFailedAuth } from "@/lib/auth";
 import { withErrorHandling } from "@/lib/withErrorHandling";
 
-export const GET = withErrorHandling(async (request: Request) => {
-  const { searchParams } = new URL(request.url);
+// POST + mot de passe dans le corps JSON : un mot de passe en query string
+// (GET ?password=…) finit dans les logs Vercel, l'historique du navigateur
+// et l'en-tête Referer.
+export const POST = withErrorHandling(async (request: Request) => {
+  const body = await request.json().catch(() => ({}));
 
-  if (!checkEditPassword(searchParams.get("password"))) {
+  if (!checkEditPassword(body?.password)) {
     await delayFailedAuth();
     return Response.json({ error: "Mot de passe incorrect" }, { status: 403 });
   }
