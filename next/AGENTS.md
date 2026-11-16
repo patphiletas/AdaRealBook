@@ -73,7 +73,7 @@ Si un changement touche plusieurs catégories à la fois, mettre à jour tous le
 
 ## Image de partage (2026-11-16)
 
-`app/opengraph-image.tsx` génère la vignette LinkedIn/messageries (fond crème, saxophone, titre). Satori n'accepte pas le woff2 : les polices (Fraunces pour le titre, Manrope pour le reste) sont demandées à Google Fonts sans navigateur déclaré, qui renvoie alors du TrueType limité aux caractères passés dans `text`. Tout texte affiché doit donc figurer dans ce paramètre (y compris en capitales si `textTransform: uppercase`), sinon les lettres manquantes sortent dans une autre police. Après un changement, faire relire https://real-book-patphiletas.vercel.app/ par le Post Inspector de LinkedIn.
+`app/opengraph-image.tsx` génère la vignette LinkedIn/messageries (fond crème, saxophone, titre). Satori n'accepte pas le woff2 : les polices (Fraunces pour le titre, Manrope pour le reste) sont demandées à Google Fonts sans navigateur déclaré, qui renvoie alors du TrueType limité aux caractères passés dans `text`. Tout texte affiché doit donc figurer dans ce paramètre (y compris en capitales si `textTransform: uppercase`), sinon les lettres manquantes sortent dans une autre police. Après un changement, faire relire https://real-book-patphiletas.vercel.app/ par le Post Inspector de LinkedIn. L'icône d'onglet (`app/icon.tsx`, saxophone sur fond crème) remplace le `favicon.ico` par défaut de Next.js, supprimé : ne pas le remettre, il serait prioritaire.
 
 ## Pièges déjà rencontrés — ne pas y retomber
 

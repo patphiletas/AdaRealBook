@@ -36,6 +36,7 @@
 
 | 2026-11-14 | **Lot 2 « usage musicien »** : pastilles de tonalité (`tonalitesDisponibles`, filtre combinable avec la recherche), favoris et récents en `localStorage` (`lib/bibliotheque.ts`, `lib/stockage.ts`, onglets Tous / Favoris / Récents, étoile sur la partition), mode scène (palette Tailwind stone/amber/white/red redéfinie sous `[data-theme="dark"]`, partition inversée par filtre CSS, script anti-flash dans `app/layout.tsx`) ; 62 tests |
 | 2026-11-16 | Image de partage Open Graph (`app/opengraph-image.tsx` : fond crème, saxophone, titre en Fraunces et texte en Manrope chargés de Google Fonts, repli sur la police par défaut si le chargement échoue) et métadonnées `openGraph` dans `app/layout.tsx` — sans elle, LinkedIn affichait une vignette vide |
+| 2026-11-16 | Icône d'onglet `app/icon.tsx` (saxophone de `public/sax.png` sur fond crème) ; suppression du `favicon.ico` par défaut de Next.js |
 
 ## Pistes identifiées pendant la migration (non faites)
 
