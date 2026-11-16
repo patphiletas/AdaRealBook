@@ -35,6 +35,7 @@
 | 2026-11-14 | **Lot 1 « fiabilité »** : adresse par morceau (`?morceau=<titre>-<id>`, `lib/morceauUrl.ts`, retour navigateur, titre d'onglet), états de chargement/erreur de la liste avec « Réessayer », liste en boutons accessibles au clavier, champ de recherche étiqueté et qui ne déborde plus sur mobile, zone `<main>` ; correction des 7 erreurs ESLint existantes ; CI complétée (lint + `next typegen` + `tsc`) ; 50 tests |
 
 | 2026-11-14 | **Lot 2 « usage musicien »** : pastilles de tonalité (`tonalitesDisponibles`, filtre combinable avec la recherche), favoris et récents en `localStorage` (`lib/bibliotheque.ts`, `lib/stockage.ts`, onglets Tous / Favoris / Récents, étoile sur la partition), mode scène (palette Tailwind stone/amber/white/red redéfinie sous `[data-theme="dark"]`, partition inversée par filtre CSS, script anti-flash dans `app/layout.tsx`) ; 62 tests |
+| 2026-11-16 | Image de partage Open Graph (`app/opengraph-image.tsx` : fond crème, saxophone, titre en Fraunces et texte en Manrope chargés de Google Fonts, repli sur la police par défaut si le chargement échoue) et métadonnées `openGraph` dans `app/layout.tsx` — sans elle, LinkedIn affichait une vignette vide |
 
 ## Pistes identifiées pendant la migration (non faites)
 

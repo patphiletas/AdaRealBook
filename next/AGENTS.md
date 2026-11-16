@@ -71,6 +71,10 @@ Si un changement touche plusieurs catégories à la fois, mettre à jour tous le
 - Logique pure (testée) dans `lib/bibliotheque.ts` ; onglets via `listeSelonVue()` et tonalité via le 3ᵉ argument de `filterPartitions()`.
 - Mode scène : `data-theme="dark"` sur `<html>`, posé avant l'affichage par le script de `app/layout.tsx` (`suppressHydrationWarning` sur `<html>`). Le thème **redéfinit les couleurs Tailwind** utilisées (`--color-stone-*`, `--color-amber-*`, `--color-white`, `--color-red-*`) dans `app/globals.css` : les composants gardent leurs classes. Toute nouvelle couleur doit venir de ces palettes ou des variables `--ada-*` (dégradés `--ada-fond`, `--ada-entete`, `--ada-fiche`), sinon elle ne s'inversera pas. La partition est inversée par `filter: invert(0.9) hue-rotate(180deg)` sur `.react-pdf__Page__canvas`. `styles/PdfViewer.css` a son bloc `[data-theme="dark"]` ; `MobileViewer.css` était déjà sombre.
 
+## Image de partage (2026-11-16)
+
+`app/opengraph-image.tsx` génère la vignette LinkedIn/messageries (fond crème, saxophone, titre). Satori n'accepte pas le woff2 : les polices (Fraunces pour le titre, Manrope pour le reste) sont demandées à Google Fonts sans navigateur déclaré, qui renvoie alors du TrueType limité aux caractères passés dans `text`. Tout texte affiché doit donc figurer dans ce paramètre (y compris en capitales si `textTransform: uppercase`), sinon les lettres manquantes sortent dans une autre police. Après un changement, faire relire https://real-book-patphiletas.vercel.app/ par le Post Inspector de LinkedIn.
+
 ## Pièges déjà rencontrés — ne pas y retomber
 
 Détail complet dans `DOC/error.md`, résumé ici :

@@ -4,6 +4,15 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "My Real Book — partitions de jazz",
   description: "Une bibliothèque de partitions jazz, façon Real Book.",
+  openGraph: {
+    title: "My Real Book — partitions de jazz",
+    description:
+      "Les standards du Real Book : recherche par titre, compositeur ou tonalité, mode scène, fiche IA.",
+    url: "https://real-book-patphiletas.vercel.app/",
+    siteName: "My Real Book",
+    locale: "fr_FR",
+    type: "website",
+  },
 };
 
 // Mode scène appliqué avant l'affichage (pas de flash clair) : choix mémorisé,
